@@ -1,22 +1,28 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
+### PlatformIO / ESP-IDF ###
+.pio/
+.pioenvs/
+.piolibdeps/
 .vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-file
-*.flf
-#Test results file
-TestResults.xml
+sdkconfig
+sdkconfig.old
+build/
+cmake-build-*/
+managed_components/
+dependencies.lock
+
+### Python ###
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Editor ###
+*.swp
+*.swo
+*~
