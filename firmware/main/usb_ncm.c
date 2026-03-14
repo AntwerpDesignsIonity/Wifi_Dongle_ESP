@@ -288,6 +288,69 @@ void usb_ncm_enable_napt(void)
     ESP_LOGI(TAG, "NAPT enabled — host traffic routed via WiFi");
 }
 
+void usb_ncm_adapt_to_wifi_subnet(const esp_netif_ip_info_t *wifi_ip_info)
+{
+    if (!s_usb_netif || !wifi_ip_info) return;
+
+    /*
+     * Keep the USB interface on its own isolated 192.168.7.x subnet to avoid
+     * any IP conflicts with the upstream router LAN.
+     *
+     * What we DO update is:
+     *  1. The DHCP "router" option (default gateway) — tell the PC to send
+     *     all traffic to the ESP (192.168.7.1), which NATs it via WiFi.
+     *  2. The DHCP DNS option — push the WiFi router's IP as the DNS server
+     *     so DNS queries resolve through the real router (the ESP NATs them).
+     *
+     * This makes the host PC get seamless internet the moment WiFi connects,
+     * with correct DNS, regardless of which router subnet the ESP joined.
+     */
+    char wifi_gw_str[16];
+    snprintf(wifi_gw_str, sizeof(wifi_gw_str), IPSTR,
+             IP2STR(&wifi_ip_info->gw));
+
+    /* Restart DHCP server with the updated router/DNS info */
+    esp_netif_dhcps_stop(s_usb_netif);
+
+    /* Push WiFi router IP as DNS (NATted through ESP) */
+    esp_netif_dns_info_t dns = {
+        .ip = {
+            .type       = ESP_IPADDR_TYPE_V4,
+            .u_addr.ip4 = { .addr = wifi_ip_info->gw.addr },
+        }
+    };
+    esp_err_t ret = esp_netif_set_dns_info(s_usb_netif,
+                                            ESP_NETIF_DNS_MAIN, &dns);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Could not update DNS to WiFi GW (%s): %s",
+                 wifi_gw_str, esp_err_to_name(ret));
+        /* Fall back to static DNS from config.h — already set at init */
+    } else {
+        ESP_LOGI(TAG, "USB DHCP DNS updated → WiFi GW %s", wifi_gw_str);
+    }
+
+    /* Offer DNS option */
+    uint8_t offer_dns = 1;
+    esp_netif_dhcps_option(s_usb_netif, ESP_NETIF_OP_SET,
+                           ESP_NETIF_DOMAIN_NAME_SERVER,
+                           &offer_dns, sizeof(offer_dns));
+
+    esp_netif_dhcps_start(s_usb_netif);
+
+    ESP_LOGI(TAG, "USB DHCP adapted: GW=192.168.7.1 DNS→%s", wifi_gw_str);
+}
+
+void usb_ncm_get_usb_ip(char *buf, size_t len)
+{
+    if (!s_usb_netif || !buf) return;
+    esp_netif_ip_info_t ip;
+    if (esp_netif_get_ip_info(s_usb_netif, &ip) == ESP_OK) {
+        snprintf(buf, len, IPSTR, IP2STR(&ip.ip));
+    } else {
+        snprintf(buf, len, "%s", USB_NET_IP);
+    }
+}
+
 bool usb_ncm_is_connected(void)
 {
     return s_connected;

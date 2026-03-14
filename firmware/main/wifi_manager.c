@@ -179,7 +179,10 @@ static esp_err_t do_connect(const char *ssid, const char *password)
             sizeof(wifi_cfg.sta.ssid));
     strlcpy((char *)wifi_cfg.sta.password, password,
             sizeof(wifi_cfg.sta.password));
-    wifi_cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+    /* Allow open networks (no password) as well as WPA2 networks */
+    wifi_cfg.sta.threshold.authmode = (password[0] != '\0')
+                                      ? WIFI_AUTH_WPA2_PSK
+                                      : WIFI_AUTH_OPEN;
     wifi_cfg.sta.pmf_cfg.capable    = true;
     wifi_cfg.sta.pmf_cfg.required   = false;
 

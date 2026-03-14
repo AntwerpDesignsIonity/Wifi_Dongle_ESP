@@ -38,6 +38,10 @@
 #include "wifi_manager.h"
 #include "usb_ncm.h"
 #include "http_server.h"
+#include "led_status.h"
+#include "factory_reset.h"
+#include "mdns_manager.h"
+#include "lwip/ip4_addr.h"
 
 static const char *TAG = "app_main";
 
@@ -50,10 +54,21 @@ static void on_got_ip(void *arg, esp_event_base_t base,
     ip_event_got_ip_t *ev = (ip_event_got_ip_t *)data;
     ESP_LOGI(TAG, "WiFi STA IP: " IPSTR, IP2STR(&ev->ip_info.ip));
 
+    /* Adapt USB-side DHCP to push the real WiFi gateway + DNS to the host */
+    usb_ncm_adapt_to_wifi_subnet(&ev->ip_info);
+
     /* Activate NAT so the host's traffic is routed through WiFi */
     usb_ncm_enable_napt();
 
+    /* Signal connected state on the status LED */
+    led_status_set(LED_STATE_CONNECTED);
+
+    /* Start management HTTPS server on 192.168.7.1:443 for OTA / status */
+    http_server_start_connected();
+
     ESP_LOGI(TAG, "=== Dongle is ready. Plug USB into your PC. ===");
+    ESP_LOGI(TAG, "=== Management UI: https://%s  (https://%s.local) ===",
+             USB_NET_IP, MDNS_HOSTNAME);
 }
 
 /* -------------------------------------------------------------------------
@@ -70,11 +85,13 @@ static void portal_timeout_task(void *arg)
             /* Credentials arrived — stop the portal and connect */
             ESP_LOGI(TAG, "Credentials received, connecting…");
             http_server_stop_portal();
+            led_status_set(LED_STATE_CONNECTING);
             esp_err_t ret = wifi_manager_connect_stored();
             if (ret != ESP_OK) {
                 ESP_LOGW(TAG,
                          "Connection failed (%s), restarting in 5 s",
                          esp_err_to_name(ret));
+                led_status_set(LED_STATE_ERROR);
                 vTaskDelay(pdMS_TO_TICKS(5000));
                 esp_restart();
             }
@@ -84,6 +101,7 @@ static void portal_timeout_task(void *arg)
     }
 
     ESP_LOGW(TAG, "Portal timed out — rebooting");
+    led_status_set(LED_STATE_ERROR);
     esp_restart();
 }
 
@@ -97,6 +115,12 @@ void app_main(void)
     ESP_LOGI(TAG, "║  %s v%s  ║", DEVICE_NAME, FIRMWARE_VERSION);
     ESP_LOGI(TAG, "║  ESP32-S3-N16R8  •  USB WiFi Dongle  ║");
     ESP_LOGI(TAG, "╚══════════════════════════════════════╝");
+
+    /* Initialise status LED as early as possible */
+    led_status_init();
+
+    /* Start factory-reset button monitor (GPIO 0 hold 5 s) */
+    factory_reset_init();
 
     /* --------------------------------------------------------------------- */
     /* 1. Non-volatile storage                                                */
@@ -127,10 +151,20 @@ void app_main(void)
     ESP_ERROR_CHECK(usb_ncm_init());
 
     /* --------------------------------------------------------------------- */
+    /* 3b. mDNS — advertise as ionity.today.local                            */
+    /* --------------------------------------------------------------------- */
+    esp_err_t mdns_ret = mdns_manager_init();
+    if (mdns_ret != ESP_OK) {
+        ESP_LOGW(TAG, "mDNS init failed (%s) — hostname resolution unavailable",
+                 esp_err_to_name(mdns_ret));
+    }
+
+    /* --------------------------------------------------------------------- */
     /* 4. WiFi manager                                                        */
     /* --------------------------------------------------------------------- */
     ESP_ERROR_CHECK(wifi_manager_init());
 
+    led_status_set(LED_STATE_CONNECTING);
     ret = wifi_manager_connect_stored();
     if (ret == ESP_OK) {
         /* Connected — NAPT will be enabled in on_got_ip() */
@@ -145,6 +179,7 @@ void app_main(void)
                  "http://%s to configure.",
                  PORTAL_SSID, PORTAL_PASS, PORTAL_IP);
 
+        led_status_set(LED_STATE_PORTAL);
         ESP_ERROR_CHECK(http_server_start_portal());
 
         /* Timeout watchdog */

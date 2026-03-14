@@ -13,6 +13,24 @@
 #define DEVICE_NAME         "ESP32-S3 WiFi Dongle"
 
 /* -------------------------------------------------------------------------
+ * mDNS / Bonjour
+ * The device advertises itself as  ionity.today.local
+ * (IDF appends ".local" automatically to the hostname)
+ * ---------------------------------------------------------------------- */
+/** mDNS hostname — resolves as ionity.today.local on the LAN */
+#define MDNS_HOSTNAME       "ionity.today"
+/** Human-readable DNS-SD instance name */
+#define MDNS_INSTANCE_NAME  "IONITY WiFi Dongle"
+
+/* -------------------------------------------------------------------------
+ * HTTPS / TLS portal
+ * ---------------------------------------------------------------------- */
+/** HTTPS port for the captive portal and management server */
+#define PORTAL_HTTPS_PORT   443
+/** HTTP port — serves a 301 redirect to HTTPS */
+#define PORTAL_HTTP_PORT    80
+
+/* -------------------------------------------------------------------------
  * USB network interface — the IP seen by the host PC's USB NIC driver
  * The ESP32 acts as the default gateway / DHCP server on this subnet.
  * ---------------------------------------------------------------------- */
@@ -56,9 +74,47 @@
 /* -------------------------------------------------------------------------
  * NVS (Non-Volatile Storage) keys for credential persistence
  * ---------------------------------------------------------------------- */
-#define NVS_NAMESPACE       "wifi_dongle"
-#define NVS_KEY_SSID        "ssid"
-#define NVS_KEY_PASS        "password"
+#define NVS_NAMESPACE           "wifi_dongle"
+#define NVS_KEY_SSID            "ssid"
+#define NVS_KEY_PASS            "password"
+#define NVS_KEY_LOCATION        "location"      /**< User location (city/area) */
+#define NVS_KEY_LAT             "lat"           /**< GPS latitude  (float as str) */
+#define NVS_KEY_LON             "lon"           /**< GPS longitude (float as str) */
+
+/* -------------------------------------------------------------------------
+ * NVS keys — First-time installation wizard (written by the setup popup)
+ *
+ * Stored safely in NVS flash — survive power cycles and OTA updates.
+ * All strings are NUL-terminated; max key length = 15 chars (NVS limit).
+ * ---------------------------------------------------------------------- */
+/** Physical install location entered by the installer, e.g. "Server Room B2" */
+#define NVS_KEY_INSTALL_LOC     "install_loc"
+/** Human-readable label for this dongle, e.g. "Dongle-HQ-01" */
+#define NVS_KEY_DEVICE_LABEL    "dev_label"
+/** Uptime seconds at which the wizard was completed (stored as decimal str) */
+#define NVS_KEY_SETUP_TIME      "setup_time"
+/** "1" once the guided setup wizard has been completed at least once */
+#define NVS_KEY_SETUP_DONE      "setup_done"
+
+/** Buffer sizes (incl. NUL terminator) */
+#define NVS_INSTALL_LOC_LEN     64
+#define NVS_DEVICE_LABEL_LEN    32
+
+/* -------------------------------------------------------------------------
+ * NVS keys — Device Scope (operational mode, saved by the web UI /scope)
+ * ---------------------------------------------------------------------- */
+/** Operating mode: "0"=NAT Router (default) | "1"=AP Bridge | "2"=AP Only | "3"=Monitor */
+#define NVS_KEY_SCOPE_MODE      "scope_mode"
+/** NAT masquerade: "1"=enabled (default) | "0"=disabled */
+#define NVS_KEY_SCOPE_NAT       "scope_nat"
+/** DHCP server on USB side: "1"=enabled (default) | "0"=disabled */
+#define NVS_KEY_SCOPE_DHCP      "scope_dhcp"
+/** Fixed WiFi channel: "0"=auto (default) | "1"–"13"=fixed channel */
+#define NVS_KEY_SCOPE_CHAN       "scope_chan"
+/** LED verbosity: "0"=off | "1"=minimal | "2"=full (default) */
+#define NVS_KEY_SCOPE_LED       "scope_led"
+/** Debug verbosity: "0"=off (default) | "1"=basic | "2"=verbose */
+#define NVS_KEY_SCOPE_DBG       "scope_dbg"
 
 /* -------------------------------------------------------------------------
  * GPIO

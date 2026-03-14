@@ -6,6 +6,22 @@ firmware/dependencies.lock
 firmware/.cache/
 firmware/flasher_args.json
 
+### Python ###
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+*.egg
+
+### Companion build outputs ###
+companion/dist/
+companion/build/
+companion/*.spec
+companion/assets/ionity.ico
+
 ### IDE / editor ###
 .vscode/
 *.swp
@@ -14,6 +30,11 @@ firmware/flasher_args.json
 
 ### macOS ###
 .DS_Store
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 ### AL (legacy, kept for compatibility) ###
 .alcache/

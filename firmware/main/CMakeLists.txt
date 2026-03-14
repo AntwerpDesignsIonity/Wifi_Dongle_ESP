@@ -4,6 +4,14 @@ idf_component_register(
         "wifi_manager.c"
         "usb_ncm.c"
         "http_server.c"
+        "led_status.c"
+        "ota_manager.c"
+        "factory_reset.c"
+        "mdns_manager.c"
+        "dns_server.c"
+        "local_log.c"
+        "ble_scanner.c"
+        "fs_manager.c"
     INCLUDE_DIRS
         "."
     REQUIRES
@@ -12,7 +20,18 @@ idf_component_register(
         nvs_flash
         esp_event
         esp_http_server
+        esp_https_server
+        mdns
         driver
         esp_tinyusb
         lwip
+        led_strip
+        app_update
+        esp_timer
+        bt
+        spiffs
+    EMBED_TXTFILES
+        "../../web/index.html"
+        "../../firmware/certs/server_cert.pem"
+        "../../firmware/certs/server_key.pem"
 )

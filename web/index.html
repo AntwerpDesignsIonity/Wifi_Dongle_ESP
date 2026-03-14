@@ -1,183 +1,2647 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- ═══════════════════════════════════════════════════════════════════
+       META-DATA  ·  IONITY WiFi Dongle  ·  ESP32-S3
+       Generated  : 2026-03-14
+       Firmware   : IDF 5.x  ·  USB-NCM  ·  HTTPS captive portal
+  ═══════════════════════════════════════════════════════════════════ -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ESP32 WiFi Dongle Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+  <!-- Primary meta -->
+  <meta name="application-name"  content="IONITY WiFi Dongle" />
+  <meta name="author"            content="Antwerp Designs Ionity" />
+  <meta name="description"       content="IONITY WiFi USB Dongle configuration portal — ESP32-S3. Set up WiFi, control bandwidth, monitor traffic and manage connected clients." />
+  <meta name="keywords"          content="IONITY, WiFi, USB Dongle, ESP32-S3, network, bandwidth limiter, NetLimiter, traffic monitor, captive portal" />
+  <meta name="robots"            content="noindex, nofollow" />
+  <meta name="generator"         content="IONITY Firmware v1.0" />
+  <meta name="theme-color"       content="#0d2547" />
+
+  <!-- Cache/security -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma"        content="no-cache" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- PWA / Apple mobile -->
+  <meta name="apple-mobile-web-app-capable"        content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title"          content="IONITY Dongle" />
+  <meta name="mobile-web-app-capable"              content="yes" />
+  <meta name="format-detection"                    content="telephone=no" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="IONITY WiFi Dongle Portal" />
+  <meta property="og:description" content="Configure your IONITY ESP32-S3 WiFi USB dongle." />
+  <meta property="og:type"        content="website" />
+  <meta property="og:locale"      content="en_US" />
+
+  <title>IONITY WiFi Dongle</title>
+
   <style>
+    /* ── Reset + base ──────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --accent:   #4fc3f7;
+      --accent2:  #90caf9;
+      --green:    #4dfa9a;
+      --red:      #fa4d4d;
+      --amber:    #ffd54f;
+      --card-bg:  rgba(255,255,255,.07);
+      --border:   rgba(255,255,255,.14);
+      --text:     #e8f0fe;
+      --muted:    #7899cc;
+    }
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: #f0f4ff;
-      margin: 0; padding: 24px 16px;
-      color: #1a1a2e;
+      background: linear-gradient(135deg,#0a1628 0%,#0d2547 60%,#0a3d2e 100%);
+      min-height: 100vh;
+      margin: 0; padding: 24px 16px 40px;
+      color: var(--text);
     }
     .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.1);
-      max-width: 480px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      max-width: 540px;
       margin: 0 auto;
       padding: 32px 28px;
     }
-    h1 { font-size: 1.6rem; margin: 0 0 8px; color: #1a73e8; }
-    p  { margin: 0 0 20px; color: #555; }
-    label { display: block; font-weight: 600; margin-top: 16px; }
-    select, input[type=password] {
-      display: block; width: 100%;
-      margin-top: 6px; padding: 10px 12px;
-      border: 1.5px solid #ccc; border-radius: 8px;
-      font-size: 1rem; outline: none;
-      transition: border-color .2s;
+
+    /* ── Typography / common ───────────────────────────────────────── */
+    .logo { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+    .logo svg { width:36px; height:36px; }
+    h1 { font-size:1.55rem; margin:0; color:var(--accent); letter-spacing:-.5px; }
+    .subtitle { color:var(--accent2); margin:0 0 8px; font-size:.85rem; }
+    .https-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:#00b47420; border:1px solid #00b47450;
+      color:var(--green); border-radius:20px;
+      padding:3px 10px; font-size:.78rem; font-weight:600; margin-bottom:4px;
     }
-    select:focus, input:focus { border-color: #1a73e8; }
+    label { display:block; font-weight:600; margin-top:14px; color:#cfe0ff; }
+    select, input[type=password], input[type=text], input[type=number], input[type=range] {
+      display:block; width:100%;
+      margin-top:6px; padding:10px 12px;
+      background:rgba(255,255,255,.08);
+      border:1.5px solid rgba(255,255,255,.2);
+      border-radius:8px; color:#fff;
+      font-size:1rem; outline:none;
+      transition:border-color .2s;
+    }
+    select option { background:#1a1a2e; }
+    select:focus, input:focus { border-color:var(--accent); }
+    input[type=range] { padding:4px 0; cursor:pointer; accent-color:var(--accent); }
+
+    /* ── Sections ──────────────────────────────────────────────────── */
+    .section {
+      margin-top:20px; border-top:1px solid rgba(255,255,255,.1);
+      padding-top:16px;
+    }
+    .section-title {
+      font-weight:700; font-size:.95rem; color:var(--accent2);
+      margin:0 0 10px; text-transform:uppercase; letter-spacing:.04em;
+      display:flex; align-items:center; gap:6px;
+    }
+    .collapsible-toggle {
+      margin-left:auto; background:none; border:none;
+      color:var(--accent2); cursor:pointer; font-size:.8rem;
+      padding:2px 6px; border-radius:4px;
+      transition:background .15s;
+    }
+    .collapsible-toggle:hover { background:rgba(255,255,255,.1); }
+    .collapsible-body { overflow:hidden; transition:max-height .3s ease; }
+
+    /* ── Buttons ───────────────────────────────────────────────────── */
     .btn {
-      display: block; width: 100%;
-      margin-top: 24px; padding: 12px;
-      background: #1a73e8; color: #fff;
-      border: none; border-radius: 8px;
-      font-size: 1rem; font-weight: 600;
-      cursor: pointer; transition: background .2s;
+      display:block; width:100%;
+      margin-top:14px; padding:12px;
+      background:#1a73e8; color:#fff;
+      border:none; border-radius:8px;
+      font-size:1rem; font-weight:700;
+      cursor:pointer; transition:background .2s;
     }
-    .btn:hover { background: #1558b0; }
-    .btn:disabled { background: #aaa; cursor: not-allowed; }
-    #msg {
-      margin-top: 16px; padding: 12px;
-      border-radius: 8px; display: none;
-      font-weight: 500;
-    }
-    .msg-ok  { background: #d4edda; color: #155724; }
-    .msg-err { background: #f8d7da; color: #721c24; }
+    .btn:hover { background:#1558b0; }
+    .btn:disabled { background:#444; cursor:not-allowed; }
+    .btn-secondary  { background:rgba(255,255,255,.10); }
+    .btn-secondary:hover { background:rgba(255,255,255,.18); }
+    .btn-danger     { background:#b71c1c; }
+    .btn-danger:hover { background:#d32f2f; }
+    .btn-sm { margin-top:8px; padding:8px 12px; font-size:.85rem; width:auto; display:inline-block; }
+    .row { display:flex; gap:8px; }
+    .row > * { flex:1; }
+
+    /* ── Messages ──────────────────────────────────────────────────── */
+    .msg { margin-top:12px; padding:11px 13px; border-radius:8px; display:none; font-weight:500; font-size:.9rem; }
+    .msg-ok  { background:#0d3d1e; color:var(--green);  border:1px solid #00b47450; }
+    .msg-err { background:#3d0d0d; color:var(--red);    border:1px solid #b4001450; }
+    .msg-warn{ background:#2a2000; color:var(--amber);  border:1px solid #ffd54f50; }
+
+    /* ── Status bar ────────────────────────────────────────────────── */
     .status-bar {
-      margin-top: 28px; padding: 12px;
-      background: #e8f0fe; border-radius: 8px;
-      font-size: .9rem;
+      margin-top:20px; padding:12px 14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; font-size:.88rem;
     }
     .dot {
-      display: inline-block;
-      width: 10px; height: 10px; border-radius: 50%;
-      margin-right: 6px;
+      display:inline-block; width:9px; height:9px;
+      border-radius:50%; margin-right:6px; vertical-align:middle;
     }
-    .dot-ok  { background: #28a745; }
-    .dot-bad { background: #dc3545; }
+    .dot-ok   { background:var(--green);  box-shadow:0 0 6px #00b474; }
+    .dot-bad  { background:var(--red); }
+    .dot-warn { background:var(--amber); }
+
+    /* ── Timestamp bar ─────────────────────────────────────────────── */
+    .ts-bar {
+      display:flex; flex-wrap:wrap; gap:6px 18px;
+      margin-top:10px; padding:10px 14px;
+      background:rgba(79,195,247,.07);
+      border:1px solid rgba(79,195,247,.18);
+      border-radius:8px; font-size:.78rem; color:#90badc;
+    }
+    .ts-item { display:flex; gap:5px; align-items:center; }
+    .ts-label { color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-size:.7rem; }
+    .ts-value { color:var(--accent); font-variant-numeric:tabular-nums; }
+
+    /* ── Traffic & NetLimiter ──────────────────────────────────────── */
+    .stat-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:8px; margin-top:10px;
+    }
+    .stat-box {
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; padding:10px 12px;
+      text-align:center;
+    }
+    .stat-box .sv { font-size:1.25rem; font-weight:700; color:var(--accent); }
+    .stat-box .sl { font-size:.72rem; color:var(--muted); margin-top:2px; text-transform:uppercase; }
+
+    .bw-bar-wrap {
+      margin-top:8px; height:6px; border-radius:3px;
+      background:rgba(255,255,255,.1); overflow:hidden;
+    }
+    .bw-bar { height:100%; border-radius:3px; transition:width .8s ease; background:var(--accent); }
+    .bw-bar.up   { background:#ff7043; }
+    .bw-bar.down { background:var(--green); }
+
+    .client-table {
+      width:100%; border-collapse:collapse; font-size:.82rem; margin-top:10px;
+    }
+    .client-table th {
+      color:var(--muted); font-weight:600; text-align:left;
+      padding:4px 6px; border-bottom:1px solid rgba(255,255,255,.1);
+      text-transform:uppercase; letter-spacing:.04em; font-size:.7rem;
+    }
+    .client-table td { padding:6px 6px; border-bottom:1px solid rgba(255,255,255,.05); vertical-align:middle; }
+    .client-table tr:last-child td { border:none; }
+    .badge {
+      display:inline-flex; align-items:center;
+      padding:2px 8px; border-radius:10px;
+      font-size:.7rem; font-weight:700;
+    }
+    .badge-ok   { background:#00b47430; color:var(--green); }
+    .badge-bad  { background:#b4000030; color:var(--red); }
+
+    .hint {
+      margin-top:14px; font-size:.78rem;
+      color:var(--muted); text-align:center;
+    }
+    .hint a { color:var(--accent); }
+    .footer {
+      margin-top:22px;
+      padding-top:16px;
+      border-top:1px solid rgba(255,255,255,.10);
+      text-align:center;
+      font-size:.72rem;
+      color:var(--muted);
+      line-height:1.7;
+    }
+    .footer a { color:var(--accent2); text-decoration:none; }
+    .footer a:hover { text-decoration:underline; }
+    .footer .cr { color:#90caf9; font-weight:700; }
+
+    /* ── MAC Spoofer ──────────────────────────────────────────────────── */
+    .mac-display {
+      display:flex; align-items:center; gap:10px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; padding:10px 14px; margin-bottom:10px;
+    }
+    .mac-current { font-family:monospace; font-size:1rem; color:var(--accent); font-weight:700; }
+    .mac-scan-status { padding:5px 0; font-size:.78rem; color:var(--muted); }
+
+    /* ── Enhanced AI Assistant ────────────────────────────────────────── */
+    .ai-score-ring {
+      text-align:center; padding:16px;
+      background:rgba(79,195,247,.07);
+      border:1px solid rgba(79,195,247,.18);
+      border-radius:12px; margin-bottom:14px;
+    }
+    .ai-score-num { font-size:2.8rem; font-weight:800; color:var(--green); line-height:1; margin:6px 0; }
+    .ai-score-track { margin-top:10px; height:8px; background:rgba(255,255,255,.1); border-radius:4px; overflow:hidden; }
+    .ai-score-fill  { height:100%; border-radius:4px; width:0%; background:var(--green); transition:width 1s ease; }
+    .ai-recs {
+      font-size:.82rem; color:var(--muted);
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:8px; padding:10px; margin-bottom:2px;
+    }
+    .ai-chat-log {
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; padding:10px;
+      min-height:80px; max-height:220px;
+      overflow-y:auto; font-size:.8rem; line-height:1.65; margin-bottom:8px;
+    }
+    .ai-bubble-user { color:var(--text); }
+    .ai-bubble-ai   { color:var(--accent); }
+    .ai-chip {
+      display:inline-flex; align-items:center;
+      padding:4px 10px; border-radius:20px; font-size:.72rem;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.15);
+      color:var(--accent2); cursor:pointer; transition:background .15s;
+    }
+    .ai-chip:hover { background:rgba(255,255,255,.18); }
+    .gps-btn {
+      background:linear-gradient(135deg,#0d3d6e,#1558b0) !important;
+      border:1px solid #4fc3f760 !important;
+    }
+
+    /* ── WiFi Network Scan ─────────────────────────────────────────── */
+    .wifi-scan-header {
+      display:flex; align-items:center; gap:8px; margin-bottom:8px;
+    }
+    .wifi-scan-count {
+      font-size:.75rem; color:var(--muted); margin-left:auto;
+    }
+    .wifi-scan-list {
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px; overflow:hidden;
+      max-height:268px; overflow-y:auto;
+    }
+    .wifi-net-row {
+      display:flex; align-items:center; gap:10px;
+      padding:9px 14px; cursor:pointer;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      transition:background .15s;
+    }
+    .wifi-net-row:last-child { border-bottom:none; }
+    .wifi-net-row:hover   { background:rgba(79,195,247,.10); }
+    .wifi-net-row.selected{
+      background:rgba(79,195,247,.18);
+      border-left:3px solid var(--accent);
+    }
+    .wifi-net-main { flex:1; min-width:0; }
+    .wifi-net-ssid {
+      font-weight:600; font-size:.9rem; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .wifi-net-meta { font-size:.72rem; color:var(--muted); margin-top:2px; }
+    .signal-bars {
+      display:flex; align-items:flex-end; gap:2px; height:16px; flex-shrink:0;
+    }
+    .signal-bars span {
+      display:inline-block; width:4px; border-radius:1px;
+      background:rgba(255,255,255,.15);
+    }
+    .signal-bars span.lit-strong { background:var(--green); }
+    .signal-bars span.lit-ok     { background:var(--amber); }
+    .signal-bars span.lit-weak   { background:#fa7a4d; }
+    .signal-bars span:nth-child(1){ height:4px; }
+    .signal-bars span:nth-child(2){ height:7px; }
+    .signal-bars span:nth-child(3){ height:11px; }
+    .signal-bars span:nth-child(4){ height:16px; }
+    .wifi-net-rssi {
+      font-size:.72rem; color:var(--muted);
+      text-align:right; min-width:52px; flex-shrink:0;
+    }
+    .wifi-selected-box {
+      display:flex; align-items:center; gap:10px;
+      background:rgba(79,195,247,.08);
+      border:1px solid rgba(79,195,247,.28);
+      border-radius:8px; padding:10px 14px; margin-top:6px;
+    }
+    .wifi-selected-ssid {
+      font-weight:700; color:var(--accent); font-size:.95rem; flex:1;
+    }
+    .wifi-selected-clear {
+      background:none; border:none; color:var(--muted);
+      cursor:pointer; font-size:.8rem; padding:2px 6px;
+      border-radius:4px; transition:background .15s;
+    }
+    .wifi-selected-clear:hover { background:rgba(255,255,255,.1); color:var(--red); }
+    .wifi-scan-empty {
+      color:var(--muted); text-align:center;
+      padding:18px; font-size:.85rem;
+    }
   </style>
 </head>
 <body>
 <div class="card">
-  <h1>&#x1F4F6; WiFi Dongle Setup</h1>
-  <p>Select your WiFi network and enter the password to connect the dongle to the Internet.</p>
 
-  <label for="ssid">Network
-    <select id="ssid"><option value="">Scanning for networks…</option></select>
-  </label>
+  <!-- ── Header ────────────────────────────────────────────────────── -->
+  <div class="logo">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="17" fill="#0d47a1" stroke="#4fc3f7" stroke-width="1.5"/>
+      <path d="M8 20 Q10 13 18 12 Q26 13 28 20" stroke="#4fc3f7" stroke-width="2.5"
+            stroke-linecap="round" fill="none"/>
+      <path d="M11 23 Q13 18 18 17 Q23 18 25 23" stroke="#90caf9" stroke-width="2"
+            stroke-linecap="round" fill="none"/>
+      <circle cx="18" cy="27" r="2.5" fill="#4fc3f7"/>
+    </svg>
+    <div>
+      <h1>IONITY</h1>
+      <p class="subtitle">WiFi USB Dongle · ESP32-S3</p>
+    </div>
+  </div>
 
-  <label for="pass">Password
-    <input type="password" id="pass"
-           placeholder="Leave empty for open networks" />
-  </label>
+  <span class="https-badge">🔒 HTTPS &nbsp;·&nbsp; ionity.today.local</span>
 
-  <button class="btn" id="connectBtn" onclick="connectWifi()">
-    Connect &amp; Save
-  </button>
+  <!-- ── Live Timestamp Bar ─────────────────────────────────────────── -->
+  <div class="ts-bar" id="tsBar">
+    <div class="ts-item">
+      <span class="ts-label">Time</span>
+      <span class="ts-value" id="tsClock">—</span>
+    </div>
+    <div class="ts-item">
+      <span class="ts-label">Date</span>
+      <span class="ts-value" id="tsDate">—</span>
+    </div>
+    <div class="ts-item">
+      <span class="ts-label">Session</span>
+      <span class="ts-value" id="tsSession">—</span>
+    </div>
+    <div class="ts-item">
+      <span class="ts-label">Last Refresh</span>
+      <span class="ts-value" id="tsRefresh">—</span>
+    </div>
+    <div class="ts-item">
+      <span class="ts-label">Uptime</span>
+      <span class="ts-value" id="tsUptime">—</span>
+    </div>
+  </div>
+  <!-- ── Device Scope ──────────────────────────────────────────── -->
+  <div class="section" id="scopeSection">
+    <div class="section-title">⚡ Device Scope</div>
+    <p style="color:#90caf9;font-size:.88rem;margin:0 0 8px;">Configure the operational mode and global behaviour of the dongle. Changes persist across reboots.</p>
 
-  <div id="msg"></div>
+    <div class="scope-grid">
+      <div class="scope-item">
+        <label for="scopeMode">Operating Mode</label>
+        <select id="scopeMode">
+          <option value="0">🌐 NAT Router</option>
+          <option value="1">🔀 AP Bridge</option>
+          <option value="2">📡 AP Only</option>
+          <option value="3">👁 Monitor Only</option>
+        </select>
+      </div>
+      <div class="scope-item">
+        <label for="scopeLed">LED Mode</label>
+        <select id="scopeLed">
+          <option value="2">💡 Full (all events)</option>
+          <option value="1">🔅 Minimal (errors only)</option>
+          <option value="0">⚫ Off</option>
+        </select>
+      </div>
+    </div>
 
+    <div class="scope-toggle" onclick="toggleNat()">
+      <span style="font-size:.88rem;font-weight:600;color:#cfe0ff;">🔀 NAT / IP masquerade</span>
+      <div class="toggle-pill on" id="natPill"></div>
+    </div>
+    <div class="scope-toggle" onclick="toggleDhcp()">
+      <span style="font-size:.88rem;font-weight:600;color:#cfe0ff;">📋 DHCP server (USB-side)</span>
+      <div class="toggle-pill on" id="dhcpPill"></div>
+    </div>
+
+    <div class="scope-grid" style="margin-top:10px;">
+      <div class="scope-item">
+        <label for="scopeChannel">WiFi Channel</label>
+        <select id="scopeChannel">
+          <option value="0">Auto</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option><option value="11">11</option>
+          <option value="12">12</option><option value="13">13</option>
+        </select>
+      </div>
+      <div class="scope-item">
+        <label for="scopeDbg">Debug Verbosity</label>
+        <select id="scopeDbg">
+          <option value="0">Off</option>
+          <option value="1">Basic</option>
+          <option value="2">Verbose</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" style="margin-top:14px;" onclick="saveScope()">💾 Apply Scope Settings</button>
+    <div id="scopeMsg" style="display:none;margin-top:10px;padding:10px;border-radius:8px;"></div>
+  </div>
+
+  <!-- ── AI Network Advisor ────────────────────────────────────────── -->
+  <div class="section" id="aiSection">
+    <div class="ai-header">
+      <div class="section-title" style="margin:0;">🤖 AI Network Advisor</div>
+      <span class="ai-badge">AI</span>
+    </div>
+    <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">Scores &amp; ranks nearby WiFi networks, detects congestion, flags security concerns and recommends the best connection.</p>
+    <button class="btn btn-secondary" onclick="runAiAdvisor()">🔍 Analyze &amp; Advise</button>
+    <div id="aiResults"></div>
+  </div>
+
+  <!-- ── USB / Serial Port Scanner ────────────────────────────────── -->
+  <div class="section" id="portSection">
+    <div class="section-title">🔌 ESP &amp; Device Port Scanner</div>
+    <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">Detects ESP32, ESP8266, Arduino and compatible devices connected to your PC's USB ports. Requires Chrome or Edge with WebSerial enabled.</p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-scan" style="flex:1;margin:0;" onclick="scanPorts()">🔌 Scan for ESP Devices</button>
+      <button class="btn btn-secondary" style="width:auto;margin:0;padding:10px 14px;font-size:.88rem;" onclick="listGrantedPorts()">📋 List Known</button>
+    </div>
+    <div id="portList" class="port-list"></div>
+    <div id="portMsg" style="display:none;margin-top:8px;"></div>
+  </div>
+  <!-- ── Status Bar ─────────────────────────────────────────────────── -->
   <div class="status-bar" id="statusBar">
     <span class="dot dot-bad" id="statusDot"></span>
     <span id="statusText">Loading status…</span>
   </div>
-</div>
+
+  <!-- ── WiFi Setup ─────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">📶 WiFi Setup</div>
+    <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">
+      Scan for nearby networks, tap one to select it, then enter the password.
+    </p>
+
+    <!-- Scan controls -->
+    <div class="wifi-scan-header">
+      <button class="btn btn-secondary" id="wifiScanBtn"
+              style="margin:0;width:auto;padding:9px 16px;font-size:.88rem;"
+              onclick="scanNetworks()">🔍 Scan Networks</button>
+      <span class="wifi-scan-count" id="wifiScanCount"></span>
+    </div>
+
+    <!-- Scan results list -->
+    <div class="wifi-scan-list" id="wifiNetList">
+      <div class="wifi-scan-empty">Press <b>Scan Networks</b> to search for available WiFi.</div>
+    </div>
+
+    <!-- Hidden value holder (read by connectWifi) -->
+    <input type="hidden" id="ssid" />
+
+    <!-- Selected network badge (shown after pick) -->
+    <div class="wifi-selected-box" id="wifiSelectedBox" style="display:none;">
+      <span style="font-size:1.1rem;">📶</span>
+      <span class="wifi-selected-ssid" id="wifiSelectedSsid"></span>
+      <span id="wifiSelectedMeta" style="font-size:.75rem;color:var(--muted);"></span>
+      <button class="wifi-selected-clear" onclick="clearWifiSelection()" title="Deselect">✕</button>
+    </div>
+
+    <label for="pass" style="margin-top:12px;">Password
+      <input type="password" id="pass" placeholder="Leave empty for open networks" />
+    </label>
+
+    <button class="btn" id="connectBtn" onclick="connectWifi()" style="margin-top:12px;">
+      Connect &amp; Save
+    </button>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <!-- ── Location ───────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      📍 Location
+      <button class="collapsible-toggle" onclick="toggleSection('locationBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="locationBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.88rem;margin:0 0 8px;">
+        Helps the dongle choose optimal WiFi channels for your region.
+      </p>
+      <label for="locText">City / Country</label>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input type="text" id="locText" placeholder="e.g. Cape Town, South Africa" style="flex:1"/>
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;" onclick="autoDetectLocation()" title="Approximate city via public IP">🌐 IP Auto</button>
+        <button class="btn btn-secondary btn-sm gps-btn" style="margin-top:0;" onclick="browserGeoLocate()" title="Precise GPS via browser geolocation">🛰 GPS</button>
+      </div>
+      <div style="margin-top:5px;font-size:.73rem;color:var(--muted);">
+        <b style="color:var(--accent2);">🌐 IP Auto</b> — city estimate via public IP &nbsp;·&nbsp;
+        <b style="color:var(--accent2);">🛰 GPS</b> — browser prompts for precise GPS coordinates + auto reverse-geocodes to City, Country
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <div>
+          <label for="latInput">Latitude</label>
+          <input type="text" id="latInput" placeholder="−33.9249" />
+        </div>
+        <div>
+          <label for="lonInput">Longitude</label>
+          <input type="text" id="lonInput" placeholder="18.4241" />
+        </div>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:12px;" onclick="saveLocation()">
+        💾 Save Location
+      </button>
+      <div id="locMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── Traffic Monitor ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      📊 Traffic Monitor
+      <button class="collapsible-toggle" onclick="toggleSection('trafficBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="trafficBody" style="max-height:0;">
+      <div class="stat-grid" id="trafficStats">
+        <div class="stat-box"><div class="sv" id="txTotal">—</div><div class="sl">Total TX</div></div>
+        <div class="stat-box"><div class="sv" id="rxTotal">—</div><div class="sl">Total RX</div></div>
+        <div class="stat-box"><div class="sv" id="txRate">—</div><div class="sl">TX Rate</div></div>
+        <div class="stat-box"><div class="sv" id="rxRate">—</div><div class="sl">RX Rate</div></div>
+        <div class="stat-box"><div class="sv" id="clients">—</div><div class="sl">Clients</div></div>
+        <div class="stat-box"><div class="sv" id="connTime">—</div><div class="sl">Conn. Time</div></div>
+      </div>
+
+      <!-- Live bandwidth bars -->
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:3px;">
+          <span>⬆ Upload</span><span id="txPct">0%</span>
+        </div>
+        <div class="bw-bar-wrap"><div class="bw-bar up" id="txBar" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin:6px 0 3px;">
+          <span>⬇ Download</span><span id="rxPct">0%</span>
+        </div>
+        <div class="bw-bar-wrap"><div class="bw-bar down" id="rxBar" style="width:0%"></div></div>
+      </div>
+
+      <button class="btn btn-secondary" style="margin-top:12px;" onclick="refreshTraffic()">
+        🔄 Refresh Traffic
+      </button>
+      <div id="trafficMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── NetLimiter ─────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      🚦 NetLimiter
+      <button class="collapsible-toggle" onclick="toggleSection('netlimBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="netlimBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">
+        Throttle bandwidth, prioritise traffic and block clients directly on the ESP32.
+      </p>
+
+      <!-- Global bandwidth caps -->
+      <div style="font-size:.82rem;font-weight:700;color:#cfe0ff;margin-bottom:6px;">Global Bandwidth Cap</div>
+      <label for="dlLimit">
+        ⬇ Max Download Speed
+        <span id="dlLimitVal" style="float:right;color:var(--accent);font-size:.85rem;">Unlimited</span>
+      </label>
+      <input type="range" id="dlLimit" min="0" max="100" step="1" value="0"
+             oninput="updateLimitLabel('dlLimit','dlLimitVal','Mbps')" />
+
+      <label for="ulLimit" style="margin-top:10px;">
+        ⬆ Max Upload Speed
+        <span id="ulLimitVal" style="float:right;color:var(--accent);font-size:.85rem;">Unlimited</span>
+      </label>
+      <input type="range" id="ulLimit" min="0" max="100" step="1" value="0"
+             oninput="updateLimitLabel('ulLimit','ulLimitVal','Mbps')" />
+
+      <!-- QoS priority -->
+      <label for="qosPriority" style="margin-top:12px;">QoS Traffic Priority</label>
+      <select id="qosPriority">
+        <option value="balanced">⚖ Balanced (default)</option>
+        <option value="streaming">🎬 Streaming first</option>
+        <option value="gaming">🎮 Gaming / Low-latency first</option>
+        <option value="voip">📞 VoIP / Video calls first</option>
+        <option value="bulk">🗃 Bulk downloads first</option>
+      </select>
+
+      <!-- Burst / buffer settings -->
+      <label for="burstSize" style="margin-top:12px;">
+        Burst Buffer Size
+        <span id="burstVal" style="float:right;color:var(--accent);font-size:.85rem;">64 KB</span>
+      </label>
+      <input type="range" id="burstSize" min="16" max="512" step="16" value="64"
+             oninput="document.getElementById('burstVal').textContent=this.value+' KB'" />
+
+      <div class="row" style="margin-top:14px;gap:8px;">
+        <button class="btn" style="margin-top:0;" onclick="applyNetLimit()">✅ Apply Limits</button>
+        <button class="btn btn-secondary" style="margin-top:0;" onclick="resetNetLimit()">↩ Reset</button>
+      </div>
+      <div id="netlimMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── Client Manager ─────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      👥 Client Manager
+      <button class="collapsible-toggle" onclick="toggleSection('clientBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="clientBody" style="max-height:0;">
+      <table class="client-table" id="clientTable">
+        <thead>
+          <tr>
+            <th>MAC Address</th>
+            <th>IP</th>
+            <th>DL&nbsp;Cap</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="clientRows">
+          <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:14px;">
+            Click Refresh to load clients
+          </td></tr>
+        </tbody>
+      </table>
+
+      <!-- Block by MAC -->
+      <label for="blockMac" style="margin-top:12px;">Block / Unblock MAC Address</label>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input type="text" id="blockMac" placeholder="AA:BB:CC:DD:EE:FF" style="flex:1;text-transform:uppercase;" />
+        <button class="btn btn-danger btn-sm" style="margin-top:0;" onclick="blockClient()">🚫 Block</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;" onclick="unblockClient()">✅ Allow</button>
+      </div>
+
+      <!-- Per-client cap -->
+      <label for="capMac" style="margin-top:12px;">Per-Client Speed Cap</label>
+      <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+        <input type="text" id="capMac" placeholder="AA:BB:CC:DD:EE:FF" style="flex:2;min-width:150px;text-transform:uppercase;" />
+        <input type="number" id="capMbps" placeholder="Mbps (0=off)" min="0" max="1000" style="flex:1;min-width:80px;" />
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;" onclick="setClientCap()">💾 Set</button>
+      </div>
+
+      <div class="row" style="margin-top:12px;gap:8px;">
+        <button class="btn btn-secondary" style="margin-top:0;" onclick="refreshClients()">🔄 Refresh Clients</button>
+        <button class="btn btn-danger" style="margin-top:0;" onclick="kickAllClients()">⚡ Kick All</button>
+      </div>
+      <div id="clientMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── Device Scanner ─────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      🔍 Device Scanner
+      <button class="collapsible-toggle" onclick="toggleSection('scannerBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="scannerBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">
+        Scan for nearby WiFi networks, Bluetooth LE devices, or both at once.
+      </p>
+
+      <!-- Mode selector -->
+      <div class="scan-tabs">
+        <button class="scan-tab active" id="scanTabWifi"  onclick="setScanMode('wifi')">📶 WiFi</button>
+        <button class="scan-tab"        id="scanTabBle"   onclick="setScanMode('ble')">📡 BLE</button>
+        <button class="scan-tab"        id="scanTabAll"   onclick="setScanMode('all')">🔍 All</button>
+      </div>
+
+      <button class="btn" id="scanNowBtn" onclick="runDeviceScan()">▶ Scan Now</button>
+
+      <!-- Progress indicator -->
+      <div class="scan-progress" id="scanProgress">
+        <span id="scanProgressText">⏳ Scanning…</span>
+        <div class="scan-progress-bar-wrap">
+          <div class="scan-progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Results table -->
+      <div id="scanResults" style="display:none;margin-top:12px;">
+        <div style="font-size:.82rem;font-weight:700;color:#cfe0ff;margin-bottom:6px;"
+             id="scanResultTitle">Results</div>
+        <table class="scan-result-table">
+          <thead>
+            <tr>
+              <th>Name / SSID</th>
+              <th>Type</th>
+              <th>RSSI</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="scanRows"></tbody>
+        </table>
+      </div>
+
+      <div id="scanMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── MAC Spoofer & Network Scanner ───────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      🔀 MAC Spoofer &amp; Scanner
+      <button class="collapsible-toggle" onclick="toggleSection('macBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="macBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">
+        Spoof the dongle's WiFi MAC address and scan the subnet for <em>all</em> devices —
+        including hidden or passive nodes that don't broadcast.
+      </p>
+
+      <!-- Current MAC display -->
+      <div class="mac-display">
+        <div>
+          <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Current MAC</div>
+          <div class="mac-current" id="curMac">—</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto;margin-top:0;" onclick="loadCurrentMac()" title="Refresh">🔄</button>
+      </div>
+
+      <!-- Randomize type -->
+      <label for="macType">Randomize Type</label>
+      <select id="macType">
+        <option value="local">🏠 Locally Administered — privacy-safe (recommended)</option>
+        <option value="vendor">🏭 Spoof Real Vendor Prefix (Apple / Samsung / Intel…)</option>
+        <option value="full">🎯 Fully Random</option>
+      </select>
+
+      <!-- Action row -->
+      <div class="row" style="gap:8px;margin-top:10px;">
+        <button class="btn" style="margin-top:0;background:linear-gradient(135deg,#1a73e8,#0d47a1);" onclick="randomizeMac()">🎲 Randomize MAC</button>
+        <button class="btn btn-secondary" style="margin-top:0;" onclick="restoreOriginalMac()">↩ Restore Original</button>
+      </div>
+
+      <!-- Manual custom MAC -->
+      <label for="manualMac" style="margin-top:12px;">Set Custom MAC</label>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input type="text" id="manualMac" placeholder="AA:BB:CC:DD:EE:FF"
+               style="flex:1;text-transform:uppercase;font-family:monospace;"
+               maxlength="17" oninput="formatMacInput(this)" />
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;" onclick="setCustomMac()">✅ Apply</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;" onclick="fillRandomPreview()" title="Generate preview without applying">🎲</button>
+      </div>
+
+      <!-- Local network scanner -->
+      <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;">
+        <div style="font-size:.82rem;font-weight:700;color:#cfe0ff;margin-bottom:4px;">🔍 Local Network MAC Scanner</div>
+        <p style="font-size:.78rem;color:var(--muted);margin:0 0 10px;">
+          <b>ARP Sweep</b> finds all IP-active hosts. <b>Passive Sniff</b> captures every
+          radio frame — including devices that never ARP (IoT, printers, hidden nodes).
+          Click any MAC to copy it to Client Manager.
+        </p>
+        <div class="row" style="gap:8px;">
+          <button class="btn btn-secondary" style="margin-top:0;" onclick="scanLocalMacs()">📡 ARP Sweep</button>
+          <button class="btn btn-secondary" style="margin-top:0;" onclick="scanPassiveMacs()">👁 Passive Sniff</button>
+        </div>
+        <div id="macScanStatus" class="mac-scan-status" style="display:none;"></div>
+        <table class="client-table" id="macScanTable" style="margin-top:10px;display:none;">
+          <thead><tr><th>#</th><th>MAC Address</th><th>IP</th><th>Vendor</th><th>Type</th></tr></thead>
+          <tbody id="macScanRows"></tbody>
+        </table>
+      </div>
+      <div id="macMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── AI Network Assistant ──────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      🤖 AI Network Assistant
+      <button class="collapsible-toggle" onclick="toggleSection('aiAssistBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="aiAssistBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.88rem;margin:0 0 12px;">
+        On-device AI analyses health, traffic patterns and configuration in real time.
+        Ask anything in plain English — powered by local heuristics + telemetry.
+      </p>
+
+      <!-- Health score -->
+      <div class="ai-score-ring">
+        <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Network Health Score</div>
+        <div class="ai-score-num" id="aiAssistScore">—</div>
+        <div id="aiAssistScoreLabel" style="font-size:.8rem;color:var(--muted);">Click Run Analysis to calculate</div>
+        <div class="ai-score-track"><div class="ai-score-fill" id="aiAssistScoreBar"></div></div>
+      </div>
+
+      <!-- Recommendations -->
+      <div style="font-size:.82rem;font-weight:700;color:#cfe0ff;margin-bottom:6px;">🎯 Smart Recommendations</div>
+      <div class="ai-recs" id="aiAssistRecs">Click <em>Run Full Analysis</em> to generate AI-powered recommendations.</div>
+
+      <!-- Pattern grid -->
+      <div style="font-size:.82rem;font-weight:700;color:#cfe0ff;margin:12px 0 6px;">📈 Pattern Analysis</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div class="stat-box"><div class="sv" id="aiAssistAnomaly" style="font-size:1rem;">—</div><div class="sl">Anomalies</div></div>
+        <div class="stat-box"><div class="sv" id="aiAssistChan"    style="font-size:1rem;">—</div><div class="sl">Best Channel</div></div>
+        <div class="stat-box"><div class="sv" id="aiAssistQos"     style="font-size:1rem;">—</div><div class="sl">QoS Hint</div></div>
+        <div class="stat-box"><div class="sv" id="aiAssistSec"     style="font-size:1rem;">—</div><div class="sl">Security</div></div>
+      </div>
+
+      <!-- Chat -->
+      <div style="font-size:.82rem;font-weight:700;color:#cfe0ff;margin:14px 0 6px;">💬 Ask the AI</div>
+      <div class="ai-chat-log" id="aiAssistLog">
+        <span style="color:var(--muted);">Type a question about your network, or tap a quick prompt below…</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="aiAssistInput"
+               placeholder="e.g. Why is my connection slow?"
+               style="flex:1;"
+               onkeydown="if(event.key==='Enter')aiAsk()" />
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;" onclick="aiAsk()">Ask ↵</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">
+        <span class="ai-chip" onclick="aiQuickAsk('diagnose my connection')">🩺 Diagnose</span>
+        <span class="ai-chip" onclick="aiQuickAsk('how can I optimise settings')">⚡ Optimise</span>
+        <span class="ai-chip" onclick="aiQuickAsk('check network security')">🔐 Security</span>
+        <span class="ai-chip" onclick="aiQuickAsk('explain my traffic stats')">📊 Traffic</span>
+        <span class="ai-chip" onclick="aiQuickAsk('what channel should I use')">📶 Channel</span>
+        <span class="ai-chip" onclick="aiQuickAsk('tell me about the MAC spoofer')">🔀 MAC Info</span>
+      </div>
+      <div class="row" style="margin-top:14px;gap:8px;">
+        <button class="btn" style="margin-top:0;" onclick="runAiAssist(this)">🧠 Run Full Analysis</button>
+        <button class="btn btn-secondary" style="margin-top:0;" onclick="clearAiChat()">🗑 Clear Chat</button>
+      </div>
+      <div id="aiAssistMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── File Manager ─────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      📁 File Manager
+      <button class="collapsible-toggle" id="fmToggleBtn"
+              onclick="fmToggleSection(this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="fmBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.88rem;margin:0 0 10px;">
+        Read &amp; write files on the ESP32's SPIFFS flash (3.4 MB).
+        Upload a <code style="color:var(--accent);">.bin</code> image
+        and flash it via OTA in one click — the ESP handles everything.
+      </p>
+
+      <!-- Drag-and-drop upload zone -->
+      <div class="upload-zone" id="fmUploadZone"
+           onclick="document.getElementById('fmFileInput').click()"
+           ondragover="fmDragOver(event)"
+           ondragleave="fmDragLeave(event)"
+           ondrop="fmDrop(event)">
+        <input type="file" id="fmFileInput"
+               onchange="fmFileChosen(this.files[0])" />
+        <div class="uz-icon">📂</div>
+        <div class="uz-text" id="fmUzText">Click or drag &amp; drop a file here</div>
+      </div>
+
+      <!-- Selected-file action row -->
+      <div id="fmActions" style="display:none;margin-top:12px;">
+        <div style="font-size:.85rem;color:#cfe0ff;margin-bottom:8px;">
+          <strong id="fmSelName"></strong>
+          <span id="fmSelSize" style="color:var(--muted);margin-left:8px;"></span>
+        </div>
+        <div class="row" style="gap:8px;">
+          <button class="btn btn-secondary" style="margin-top:0;"
+                  onclick="fmUploadToSpiffs()">💾 Save to SPIFFS</button>
+          <button class="btn" id="fmInstallBtn"
+                  style="margin-top:0;display:none;"
+                  onclick="fmInstallDirect()">⚡ Install OTA</button>
+        </div>
+      </div>
+
+      <!-- Upload / flash progress -->
+      <div class="fm-progress-wrap" id="fmProgressWrap">
+        <div class="fm-progress-fill" id="fmProgressFill"></div>
+      </div>
+      <div class="fm-progress-text" id="fmProgressText"></div>
+
+      <!-- SPIFFS usage bar -->
+      <div class="fm-usage" id="fmUsageBar" style="display:none;">
+        <div style="display:flex;justify-content:space-between;">
+          <span id="fmUsageText">Loading usage…</span>
+          <span id="fmUsagePct" style="color:var(--accent);"></span>
+        </div>
+        <div class="fm-usage-bar-wrap">
+          <div class="fm-usage-bar" id="fmUsageFill" style="width:0%;"></div>
+        </div>
+      </div>
+
+      <!-- File list -->
+      <div style="display:flex;justify-content:space-between;
+                  align-items:center;margin-top:14px;">
+        <span style="font-size:.82rem;font-weight:700;color:#cfe0ff;">Files on Device</span>
+        <button class="btn btn-secondary btn-sm" style="margin:0;"
+                onclick="fmLoadFiles()">🔄 Refresh</button>
+      </div>
+      <table class="fs-table">
+        <thead>
+          <tr><th>Filename</th><th>Size</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="fmFileRows">
+          <tr><td colspan="3"
+            style="color:var(--muted);text-align:center;padding:14px;">
+            Open section to load files
+          </td></tr>
+        </tbody>
+      </table>
+
+      <div id="fmMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── Advanced / System ──────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      ⚙ System
+      <button class="collapsible-toggle" onclick="toggleSection('sysBody',this)">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="sysBody" style="max-height:0;">
+      <div class="stat-grid" id="sysStats">
+        <div class="stat-box"><div class="sv" id="sysHeap">—</div><div class="sl">Free Heap</div></div>
+        <div class="stat-box"><div class="sv" id="sysCpu">—</div><div class="sl">CPU Load</div></div>
+        <div class="stat-box"><div class="sv" id="sysTemp">—</div><div class="sl">Chip Temp</div></div>
+        <div class="stat-box"><div class="sv" id="sysVer">—</div><div class="sl">Firmware</div></div>
+      </div>
+      <div class="row" style="margin-top:12px;gap:8px;">
+        <button class="btn btn-secondary" style="margin-top:0;" onclick="refreshSysInfo()">🔄 Refresh</button>
+        <button class="btn btn-danger" style="margin-top:0;" onclick="factoryReset()">🗑 Factory Reset</button>
+      </div>
+      <div id="sysMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- ── Lighting Studio ───────────────────────────────────────────── -->
+  <div class="section" id="lightingSection">
+    <div class="section-title">
+      💡 Lighting Studio
+      <button class="collapsible-toggle" onclick="toggleSection('lightingBody',this);_initLighting()">▼ Show</button>
+    </div>
+    <div class="collapsible-body" id="lightingBody" style="max-height:0;">
+      <p style="color:#90caf9;font-size:.86rem;margin:0 0 8px;">Real-time WS2812B LED control. The preview mirrors the physical LED frame-for-frame. Pick a colour, choose an effect, or tap an AI preset.</p>
+
+      <!-- Live animated LED preview -->
+      <div class="led-preview-wrap">
+        <div style="position:relative;">
+          <div class="led-bulb" id="ledBulb"><div class="led-ring"></div></div>
+        </div>
+        <div class="led-label">WS2812B &nbsp;·&nbsp; ESP32-S3 N16R8</div>
+        <div class="led-state-text" id="ledStateTxt">— — —</div>
+      </div>
+
+      <!-- Colour picker row -->
+      <div class="led-color-row">
+        <div class="led-color-swatch">
+          <input type="color" id="ledColorPicker" value="#00ff40" oninput="_ledOnColor(this.value)" />
+        </div>
+        <input type="text" id="ledHex" value="#00FF40" maxlength="7" placeholder="#RRGGBB"
+               style="flex:1;font-family:monospace;" oninput="_ledOnHex(this.value)" />
+        <button class="btn btn-secondary btn-sm" style="margin-top:0;width:auto;" onclick="applyLedNow()">Apply</button>
+      </div>
+
+      <!-- RGB triplet readout -->
+      <div class="led-rgb-row">
+        <div class="led-rgb-box">
+          <div class="rv" id="ledR" style="color:#ff6b6b;">R: 0</div>
+          <div class="rl">Red</div>
+        </div>
+        <div class="led-rgb-box">
+          <div class="rv" id="ledG" style="color:#6bff8e;">G: 255</div>
+          <div class="rl">Green</div>
+        </div>
+        <div class="led-rgb-box">
+          <div class="rv" id="ledB" style="color:#6bb8ff;">B: 64</div>
+          <div class="rl">Blue</div>
+        </div>
+      </div>
+
+      <!-- Effect mode buttons -->
+      <div style="font-weight:700;font-size:.82rem;color:#cfe0ff;margin:14px 0 6px;">⚡ Effect Mode</div>
+      <div class="effect-grid">
+        <button class="effect-btn" data-eff="0" onclick="_ledSelectEffect(0)">⬜ Solid</button>
+        <button class="effect-btn" data-eff="1" onclick="_ledSelectEffect(1)">🔦 Blink</button>
+        <button class="effect-btn active" data-eff="2" onclick="_ledSelectEffect(2)">🌊 Breathe</button>
+        <button class="effect-btn" data-eff="3" onclick="_ledSelectEffect(3)">⚡ Pulse</button>
+        <button class="effect-btn" data-eff="4" onclick="_ledSelectEffect(4)">💥 Strobe</button>
+        <button class="effect-btn" data-eff="5" onclick="_ledSelectEffect(5)">🏄 Wave</button>
+      </div>
+
+      <!-- Speed / period slider -->
+      <label for="ledSpeed" style="margin-top:4px;">
+        Animation Period
+        <span id="ledSpeedVal" style="float:right;color:var(--accent);font-size:.85rem;">1000 ms</span>
+      </label>
+      <input type="range" id="ledSpeed" min="80" max="5000" step="80" value="1000"
+             oninput="_ledOnSpeed(this.value)" />
+
+      <button class="btn" style="margin-top:14px;" onclick="applyLedNow()">💡 Apply to Device</button>
+      <div id="ledMsg" class="msg"></div>
+
+      <!-- AI Preset library -->
+      <div style="margin:18px 0 10px;border-top:1px solid rgba(255,255,255,.09);padding-top:14px;">
+        <div style="font-weight:700;font-size:.88rem;color:var(--accent2);">✨ AI Presets</div>
+        <p style="color:#90caf9;font-size:.76rem;margin:4px 0 10px;">One-tap lighting presets tuned for every operating mode and mood.</p>
+      </div>
+      <div class="preset-grid" id="ledPresetGrid"></div>
+    </div>
+  </div>
+
+  <p class="hint">
+    Manage this device at
+    <a href="https://ionity.today.local" target="_blank">https://ionity.today.local</a>
+    or <a href="https://192.168.7.1" target="_blank">https://192.168.7.1</a>
+  </p>
+
+  <!-- ── Legal Footer ──────────────────────────────────────────────── -->
+  <div class="footer">
+    <div class="cr">IONITY (Pty) (Ltd) &mdash; South Africa</div>
+    <div>
+      <a href="https://www.ionity.today" target="_blank" rel="noopener">www.ionity.today</a>
+    </div>
+    <div style="margin-top:4px;">
+      Licensed under
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">
+        CC BY-NC-SA 4.0
+      </a>
+      &nbsp;&bull;&nbsp; ALL RIGHTS RESERVED
+    </div>
+    <div style="margin-top:2px;">
+      &copy; 2018&ndash;2026+ &nbsp;&bull;&nbsp;
+      Author: <span style="color:#e8f0fe;font-weight:600;">Johan Wilhelm van Antwerp</span>
+    </div>
+  </div>
+</div><!-- /card -->
 
 <script>
-/* ── API helpers ─────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════
+   IONITY WiFi Dongle — Portal Script
+   Meta : version 1.0 · ESP32-S3 · USB-NCM
+   © 2026 Antwerp Designs Ionity
+════════════════════════════════════════════════════════════════════════ */
+
+/* ── Helpers ──────────────────────────────────────────────────────────── */
+const esc = s =>
+  String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+           .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
 async function apiFetch(url, opts) {
   const r = await fetch(url, opts);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r;
 }
 
-/* ── Scan ────────────────────────────────────────────────────────────── */
+function showMsg(id, text, type='ok') {
+  const el = document.getElementById(id);
+  el.className = 'msg msg-' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+  if (type === 'ok') setTimeout(() => { el.style.display = 'none'; }, 6000);
+}
+
+function fmtBytes(b) {
+  if (b == null) return '—';
+  if (b < 1024)        return b + ' B';
+  if (b < 1048576)     return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824)  return (b/1048576).toFixed(2) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function fmtRate(bps) {
+  if (bps == null) return '—';
+  if (bps < 1024)       return bps + ' B/s';
+  if (bps < 1048576)    return (bps/1024).toFixed(1) + ' KB/s';
+  return (bps/1048576).toFixed(2) + ' MB/s';
+}
+
+function fmtDuration(sec) {
+  if (sec == null) return '—';
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  return h ? `${h}h ${m}m` : m ? `${m}m ${s}s` : `${s}s`;
+}
+
+function padZ(n) { return String(n).padStart(2,'0'); }
+
+/* ── Collapsible sections ─────────────────────────────────────────────── */
+function toggleSection(id, btn) {
+  const body = document.getElementById(id);
+  const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+  body.style.maxHeight = open ? '0' : body.scrollHeight + 500 + 'px';
+  btn.textContent = open ? '▼ Show' : '▲ Hide';
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TIMESTAMPS  ·  real-time clock + intervals
+══════════════════════════════════════════════════════════════════════ */
+const SESSION_START = Date.now();
+let   deviceUptimeSec = null;  // filled from /status
+
+function updateClock() {
+  const now  = new Date();
+  const hh   = padZ(now.getHours()),
+        mm   = padZ(now.getMinutes()),
+        ss   = padZ(now.getSeconds());
+  const yy   = now.getFullYear(),
+        mo   = padZ(now.getMonth()+1),
+        dd   = padZ(now.getDate());
+
+  document.getElementById('tsClock').textContent   = `${hh}:${mm}:${ss}`;
+  document.getElementById('tsDate').textContent    = `${yy}-${mo}-${dd}`;
+
+  // Session elapsed
+  const elSec = Math.floor((Date.now() - SESSION_START) / 1000);
+  document.getElementById('tsSession').textContent = fmtDuration(elSec);
+
+  // Device uptime (from last /status poll)
+  document.getElementById('tsUptime').textContent  =
+    deviceUptimeSec != null ? fmtDuration(deviceUptimeSec) : '—';
+}
+
+function markRefresh() {
+  const now = new Date();
+  document.getElementById('tsRefresh').textContent =
+    `${padZ(now.getHours())}:${padZ(now.getMinutes())}:${padZ(now.getSeconds())}`;
+}
+
+// Tick every second (clock) — dominant interval
+setInterval(updateClock, 1000);
+
+// Full status poll every 6 s — lightweight
+setInterval(refreshStatus, 6000);
+
+// Traffic stats poll every 10 s when traffic panel open
+setInterval(() => {
+  const tb = document.getElementById('trafficBody');
+  if (tb.style.maxHeight && tb.style.maxHeight !== '0px') refreshTraffic();
+}, 10000);
+
+// Minute-boundary tick — re-scan WiFi every minute (only if list is visible)
+setInterval(() => {
+  const list = document.getElementById('wifiNetList');
+  if (list && !list.querySelector('.wifi-scan-empty')) scanNetworks();
+  markRefresh();
+}, 60000);
+
+/* ══════════════════════════════════════════════════════════════════════
+   WIFI
+══════════════════════════════════════════════════════════════════════ */
+/* ── WiFi signal-bars helper ─────────────────────────────────────── */
+function signalBars(rssi) {
+  const lvl = rssi >= -50 ? 4 : rssi >= -60 ? 3 : rssi >= -70 ? 2 : 1;
+  const cls  = rssi >= -60 ? 'lit-strong' : rssi >= -70 ? 'lit-ok' : 'lit-weak';
+  return `<div class="signal-bars">${[1,2,3,4].map(i=>
+    `<span class="${i<=lvl?cls:''}"></span>`).join('')}</div>`;
+}
+
+function signalLabel(rssi) {
+  if (rssi >= -50) return 'Excellent';
+  if (rssi >= -60) return 'Good';
+  if (rssi >= -70) return 'Fair';
+  return 'Weak';
+}
+
+/* ── Select / deselect a WiFi network from the scan list ─────────── */
+function selectWifiNet(ssid, rssi, auth) {
+  document.getElementById('ssid').value = ssid;
+
+  // Highlight selected row
+  document.querySelectorAll('.wifi-net-row').forEach(r => {
+    r.classList.toggle('selected', r.dataset.ssid === ssid);
+  });
+
+  // Show badge
+  const box  = document.getElementById('wifiSelectedBox');
+  document.getElementById('wifiSelectedSsid').textContent = ssid;
+  document.getElementById('wifiSelectedMeta').textContent =
+    `${rssi} dBm · ${signalLabel(rssi)} · ${WIFI_AUTH[auth] ?? 'Auth '+auth}`;
+  box.style.display = 'flex';
+
+  // Focus password if secured
+  if (auth !== 0) document.getElementById('pass').focus();
+}
+
+function clearWifiSelection() {
+  document.getElementById('ssid').value = '';
+  document.getElementById('wifiSelectedBox').style.display = 'none';
+  document.querySelectorAll('.wifi-net-row').forEach(r => r.classList.remove('selected'));
+}
+
+/* ── Scan and render network list ───────────────────────────────── */
 async function scanNetworks() {
-  const sel = document.getElementById('ssid');
-  sel.innerHTML = '<option value="">Scanning…</option>';
+  const list    = document.getElementById('wifiNetList');
+  const count   = document.getElementById('wifiScanCount');
+  const scanBtn = document.getElementById('wifiScanBtn');
+
+  if (scanBtn) { scanBtn.disabled = true; scanBtn.textContent = '⏳ Scanning…'; }
+  list.innerHTML = '<div class="wifi-scan-empty">⏳ Scanning for networks…</div>';
+  if (count) count.textContent = '';
+
   try {
-    const r   = await apiFetch('/scan');
-    const aps = await r.json();
+    const aps = await (await apiFetch('/scan')).json();
+
     if (!aps.length) {
-      sel.innerHTML = '<option value="">No networks found</option>';
+      list.innerHTML = '<div class="wifi-scan-empty">No networks found. Try again.</div>';
       return;
     }
-    sel.innerHTML = aps.map(a =>
-      `<option value="${esc(a.ssid)}">${esc(a.ssid)} (${a.rssi} dBm)</option>`
-    ).join('');
+
+    // Sort by RSSI descending
+    aps.sort((a, b) => b.rssi - a.rssi);
+
+    const currentSsid = document.getElementById('ssid').value;
+
+    list.innerHTML = aps.map(a => {
+      const sel   = a.ssid === currentSsid ? ' selected' : '';
+      const lock  = a.auth === 0 ? '🔓' : '🔒';
+      const auth  = WIFI_AUTH[a.auth] ?? ('Auth ' + a.auth);
+      return `<div class="wifi-net-row${sel}" data-ssid="${esc(a.ssid)}"
+                   data-rssi="${a.rssi}" data-auth="${a.auth}"
+                   onclick="selectWifiNet('${esc(a.ssid).replace(/'/g,"\\'")}',${
+                   a.rssi},${a.auth})">
+        ${signalBars(a.rssi)}
+        <div class="wifi-net-main">
+          <div class="wifi-net-ssid">${lock} ${esc(a.ssid) || '<em>(hidden)</em>'}</div>
+          <div class="wifi-net-meta">${auth}</div>
+        </div>
+        <div class="wifi-net-rssi">${a.rssi}<br>dBm</div>
+      </div>`;
+    }).join('');
+
+    if (count) count.textContent = `${aps.length} network${aps.length !== 1 ? 's' : ''} found`;
   } catch (e) {
-    sel.innerHTML = `<option value="">Scan failed: ${e.message}</option>`;
+    list.innerHTML = `<div class="wifi-scan-empty" style="color:var(--red);">❌ Scan failed: ${esc(e.message)}</div>`;
+  } finally {
+    if (scanBtn) { scanBtn.disabled = false; scanBtn.textContent = '🔍 Scan Networks'; }
   }
 }
 
-/* ── Connect ─────────────────────────────────────────────────────────── */
 async function connectWifi() {
-  const ssid = document.getElementById('ssid').value;
+  const ssid = document.getElementById('ssid').value.trim();
   const pass = document.getElementById('pass').value;
   const btn  = document.getElementById('connectBtn');
-
-  if (!ssid) { showMsg('Please select a network.', false); return; }
-
-  btn.disabled    = true;
-  btn.textContent = 'Saving…';
-
-  const body = `ssid=${encodeURIComponent(ssid)}&password=${encodeURIComponent(pass)}`;
+  if (!ssid) { showMsg('msg','Please scan and select a network first.','err'); return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
   try {
     await apiFetch('/connect', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `ssid=${encodeURIComponent(ssid)}&password=${encodeURIComponent(pass)}`
     });
-    showMsg(
-      '✅ Credentials saved! The dongle is connecting to your network. ' +
-      'You can now plug it into your PC via USB — it will appear as a ' +
-      'network adapter automatically.',
-      true
-    );
+    showMsg('msg',
+      '✅ Credentials saved! The dongle is connecting — plug into USB to use as a network adapter.',
+      'ok');
   } catch (e) {
-    showMsg(`❌ Error: ${e.message}. Please try again.`, false);
-    btn.disabled    = false;
-    btn.textContent = 'Connect & Save';
+    showMsg('msg', `❌ ${esc(e.message)}`, 'err');
+    btn.disabled = false; btn.textContent = 'Connect & Save';
   }
 }
 
-/* ── Status poll ─────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   STATUS
+══════════════════════════════════════════════════════════════════════ */
 async function refreshStatus() {
   try {
-    const r  = await apiFetch('/status');
-    const st = await r.json();
-    const states = ['Disconnected', 'Connecting…', 'Connected', 'Failed'];
-    const dot    = document.getElementById('statusDot');
-    const text   = document.getElementById('statusText');
+    const st = await (await apiFetch('/status')).json();
+    const states = ['Disconnected','Connecting…','Connected','Portal','Error'];
+    const dot  = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
     dot.className = 'dot ' + (st.state === 2 ? 'dot-ok' : 'dot-bad');
     text.textContent = st.state === 2
-      ? `Connected to ${esc(st.ssid)} — IP: ${st.ip}  (${st.rssi} dBm)`
+      ? `Connected · ${esc(st.ssid)} · IP ${st.ip} · ${st.rssi} dBm · v${st.version}`
       : (states[st.state] || 'Unknown');
-  } catch (_) { /* ignore transient errors */ }
+    if (st.uptime != null) deviceUptimeSec = st.uptime;
+
+    // Populate system stats if available
+    if (st.heap)  document.getElementById('sysHeap').textContent = fmtBytes(st.heap);
+    if (st.cpu)   document.getElementById('sysCpu').textContent  = st.cpu + '%';
+    if (st.temp)  document.getElementById('sysTemp').textContent = st.temp + ' °C';
+    if (st.version) document.getElementById('sysVer').textContent = 'v' + st.version;
+    markRefresh();
+  } catch (_) {}
 }
 
-/* ── Helpers ─────────────────────────────────────────────────────────── */
-function showMsg(text, ok) {
-  const el = document.getElementById('msg');
-  el.className    = ok ? 'msg-ok' : 'msg-err';
-  el.textContent  = text;
+/* ══════════════════════════════════════════════════════════════════════
+   LOCATION
+══════════════════════════════════════════════════════════════════════ */
+async function loadLocation() {
+  try {
+    const d = await (await apiFetch('/location')).json();
+    if (d.location) document.getElementById('locText').value  = d.location;
+    if (d.lat)      document.getElementById('latInput').value = d.lat;
+    if (d.lon)      document.getElementById('lonInput').value = d.lon;
+  } catch (_) {}
+}
+
+async function autoDetectLocation() {
+  try {
+    const r = await fetch('http://ip-api.com/json/?fields=city,country,lat,lon');
+    const d = await r.json();
+    document.getElementById('locText').value  = `${d.city}, ${d.country}`;
+    document.getElementById('latInput').value = d.lat ?? '';
+    document.getElementById('lonInput').value = d.lon ?? '';
+    showMsg('locMsg', '📍 Location detected (approximate). Click Save to store.', 'ok');
+  } catch (e) {
+    showMsg('locMsg', `Auto-detect failed: ${esc(e.message)}`, 'err');
+  }
+}
+
+async function saveLocation() {
+  const loc = document.getElementById('locText').value.trim();
+  const lat = document.getElementById('latInput').value.trim();
+  const lon = document.getElementById('lonInput').value.trim();
+  if (!loc) { showMsg('locMsg','Please enter a location.','err'); return; }
+  try {
+    await apiFetch('/location', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `location=${encodeURIComponent(loc)}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
+    });
+    showMsg('locMsg','✅ Location saved on the dongle.','ok');
+  } catch (e) {
+    showMsg('locMsg',`❌ ${esc(e.message)}`,'err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TRAFFIC MONITOR
+══════════════════════════════════════════════════════════════════════ */
+let trafficCapMbps = 100; // reference max for bar display
+
+async function refreshTraffic() {
+  try {
+    const d = await (await apiFetch('/traffic')).json();
+
+    document.getElementById('txTotal').textContent = fmtBytes(d.tx_bytes);
+    document.getElementById('rxTotal').textContent = fmtBytes(d.rx_bytes);
+    document.getElementById('txRate').textContent  = fmtRate(d.tx_bps);
+    document.getElementById('rxRate').textContent  = fmtRate(d.rx_bps);
+    document.getElementById('clients').textContent = d.clients ?? '—';
+    document.getElementById('connTime').textContent = fmtDuration(d.uptime);
+
+    // Bandwidth bars — relative to cap
+    const cap = trafficCapMbps * 125000; // bytes/s
+    const txP = Math.min(100, ((d.tx_bps || 0) / cap) * 100).toFixed(1);
+    const rxP = Math.min(100, ((d.rx_bps || 0) / cap) * 100).toFixed(1);
+    document.getElementById('txBar').style.width = txP + '%';
+    document.getElementById('rxBar').style.width = rxP + '%';
+    document.getElementById('txPct').textContent = txP + '%';
+    document.getElementById('rxPct').textContent = rxP + '%';
+  } catch (e) {
+    showMsg('trafficMsg', `Traffic fetch failed: ${esc(e.message)}`, 'err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   NET LIMITER
+══════════════════════════════════════════════════════════════════════ */
+function updateLimitLabel(sliderId, labelId, unit) {
+  const v = parseInt(document.getElementById(sliderId).value, 10);
+  document.getElementById(labelId).textContent = v === 0 ? 'Unlimited' : `${v} ${unit}`;
+}
+
+async function applyNetLimit() {
+  const dl    = parseInt(document.getElementById('dlLimit').value, 10);
+  const ul    = parseInt(document.getElementById('ulLimit').value, 10);
+  const qos   = document.getElementById('qosPriority').value;
+  const burst = parseInt(document.getElementById('burstSize').value, 10);
+
+  // Update bar reference so traffic bars scale correctly
+  if (dl > 0) trafficCapMbps = dl;
+
+  try {
+    await apiFetch('/netlimit', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body:
+        `dl=${dl}&ul=${ul}` +
+        `&qos=${encodeURIComponent(qos)}` +
+        `&burst=${burst}`
+    });
+    showMsg('netlimMsg',
+      `✅ Applied — DL: ${dl || '∞'} Mbps  UL: ${ul || '∞'} Mbps  QoS: ${qos}  Burst: ${burst} KB`,
+      'ok');
+  } catch (e) {
+    showMsg('netlimMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+async function resetNetLimit() {
+  document.getElementById('dlLimit').value = 0;
+  document.getElementById('ulLimit').value = 0;
+  updateLimitLabel('dlLimit','dlLimitVal','Mbps');
+  updateLimitLabel('ulLimit','ulLimitVal','Mbps');
+  document.getElementById('qosPriority').value = 'balanced';
+  document.getElementById('burstSize').value   = 64;
+  document.getElementById('burstVal').textContent = '64 KB';
+  trafficCapMbps = 100;
+  try {
+    await apiFetch('/netlimit', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: 'dl=0&ul=0&qos=balanced&burst=64'
+    });
+    showMsg('netlimMsg','↩ Limits reset — full throughput restored.','ok');
+  } catch (e) {
+    showMsg('netlimMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CLIENT MANAGER
+══════════════════════════════════════════════════════════════════════ */
+async function refreshClients() {
+  const tbody = document.getElementById('clientRows');
+  tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">Loading…</td></tr>';
+  try {
+    const list = await (await apiFetch('/clients')).json();
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No clients connected</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(c => `
+      <tr>
+        <td style="font-family:monospace;font-size:.75rem;">${esc(c.mac)}</td>
+        <td>${esc(c.ip || '—')}</td>
+        <td>${c.cap ? c.cap + ' Mb' : '∞'}</td>
+        <td><span class="badge ${c.blocked ? 'badge-bad' : 'badge-ok'}">
+          ${c.blocked ? '🚫 Blocked' : '✅ Active'}
+        </span></td>
+        <td>
+          <button class="btn btn-danger btn-sm" style="margin:0;padding:4px 8px;font-size:.72rem;"
+            onclick="blockMacDirect('${esc(c.mac)}')">Block</button>
+        </td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--red);">Error: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+function blockMacDirect(mac) {
+  document.getElementById('blockMac').value = mac;
+  blockClient();
+}
+
+async function blockClient() {
+  const mac = document.getElementById('blockMac').value.trim().toUpperCase();
+  if (!mac) { showMsg('clientMsg','Enter a MAC address.','err'); return; }
+  try {
+    await apiFetch('/block', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `mac=${encodeURIComponent(mac)}&action=block`
+    });
+    showMsg('clientMsg', `🚫 ${mac} blocked.`, 'warn');
+    refreshClients();
+  } catch (e) {
+    showMsg('clientMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+async function unblockClient() {
+  const mac = document.getElementById('blockMac').value.trim().toUpperCase();
+  if (!mac) { showMsg('clientMsg','Enter a MAC address.','err'); return; }
+  try {
+    await apiFetch('/block', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `mac=${encodeURIComponent(mac)}&action=allow`
+    });
+    showMsg('clientMsg', `✅ ${mac} allowed.`, 'ok');
+    refreshClients();
+  } catch (e) {
+    showMsg('clientMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+async function setClientCap() {
+  const mac  = document.getElementById('capMac').value.trim().toUpperCase();
+  const mbps = parseInt(document.getElementById('capMbps').value, 10) || 0;
+  if (!mac) { showMsg('clientMsg','Enter a MAC address.','err'); return; }
+  try {
+    await apiFetch('/clientcap', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `mac=${encodeURIComponent(mac)}&mbps=${mbps}`
+    });
+    showMsg('clientMsg',
+      mbps ? `💾 ${mac} capped at ${mbps} Mbps.` : `💾 ${mac} cap removed.`, 'ok');
+    refreshClients();
+  } catch (e) {
+    showMsg('clientMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+async function kickAllClients() {
+  if (!confirm('Disconnect all connected clients now?')) return;
+  try {
+    await apiFetch('/clients/kick', { method: 'POST' });
+    showMsg('clientMsg','⚡ All clients kicked.','warn');
+    refreshClients();
+  } catch (e) {
+    showMsg('clientMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DEVICE SCANNER  (WiFi | BLE | All)
+══════════════════════════════════════════════════════════════════════ */
+let currentScanMode = 'wifi';
+
+function setScanMode(mode) {
+  currentScanMode = mode;
+  const ids = { wifi: 'scanTabWifi', ble: 'scanTabBle', all: 'scanTabAll' };
+  Object.entries(ids).forEach(([m, id]) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+}
+
+const WIFI_AUTH = [
+  'Open','WEP','WPA','WPA2','WPA/WPA2',
+  'WPA2-Ent','WPA3','WPA2/WPA3','WAPI','OWE'
+];
+
+async function runDeviceScan() {
+  const btn      = document.getElementById('scanNowBtn');
+  const prog     = document.getElementById('scanProgress');
+  const progText = document.getElementById('scanProgressText');
+  const results  = document.getElementById('scanResults');
+  const rows     = document.getElementById('scanRows');
+
+  btn.disabled = true;
+  prog.style.display    = 'block';
+  results.style.display = 'none';
+  rows.innerHTML        = '';
+
+  let wifiItems = [], bleItems = [], hasError = false;
+
+  try {
+    if (currentScanMode === 'wifi' || currentScanMode === 'all') {
+      progText.textContent = '📶 Scanning WiFi networks…';
+      try {
+        wifiItems = await (await apiFetch('/scan')).json();
+      } catch (e) {
+        showMsg('scanMsg', `WiFi scan failed: ${esc(e.message)}`, 'err');
+        hasError = true;
+      }
+    }
+
+    if (currentScanMode === 'ble' || currentScanMode === 'all') {
+      progText.textContent = '📡 BLE scan in progress (~3.5 s)…';
+      try {
+        bleItems = await (await apiFetch('/blescan')).json();
+      } catch (e) {
+        showMsg('scanMsg', `BLE scan failed: ${esc(e.message)}`, 'err');
+        hasError = true;
+      }
+    }
+
+    /* ── Render results ── */
+    const total = wifiItems.length + bleItems.length;
+    document.getElementById('scanResultTitle').textContent =
+      `Found ${total} device(s)`;
+
+    if (total === 0) {
+      rows.innerHTML =
+        '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:14px;">' +
+        (hasError ? 'Scan encountered errors — see message above.' : 'No devices found.') +
+        '</td></tr>';
+    } else {
+      /* WiFi rows */
+      const wRows = wifiItems.map(a => `
+        <tr>
+          <td>${esc(a.ssid || '(hidden)')}</td>
+          <td><span class="badge type-wifi">📶 WiFi</span></td>
+          <td>${a.rssi} dBm</td>
+          <td style="font-size:.78rem;color:var(--muted);">${WIFI_AUTH[a.auth] ?? 'Auth '+a.auth}</td>
+        </tr>`).join('');
+
+      /* BLE rows */
+      const bRows = bleItems.map(d => `
+        <tr>
+          <td>${esc(d.name || '(unnamed)')}</td>
+          <td><span class="badge type-ble">📡 BLE</span></td>
+          <td>${d.rssi} dBm</td>
+          <td style="font-family:monospace;font-size:.72rem;color:var(--muted);">
+            ${esc(d.mac)}${d.type === 1 ? ' <span style="color:#7899cc">(rnd)</span>' : ''}
+          </td>
+        </tr>`).join('');
+
+      rows.innerHTML = wRows + bRows;
+    }
+
+    results.style.display = 'block';
+    if (!hasError) showMsg('scanMsg', `✅ Scan complete — ${total} device(s) found.`, 'ok');
+  } finally {
+    btn.disabled = false;
+    prog.style.display = 'none';
+    progText.textContent = '⏳ Scanning…';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SYSTEM
+══════════════════════════════════════════════════════════════════════ */
+async function refreshSysInfo() {
+  try {
+    const d = await (await apiFetch('/sysinfo')).json();
+    if (d.heap)    document.getElementById('sysHeap').textContent = fmtBytes(d.heap);
+    if (d.cpu)     document.getElementById('sysCpu').textContent  = d.cpu + '%';
+    if (d.temp)    document.getElementById('sysTemp').textContent = d.temp.toFixed(1) + ' °C';
+    if (d.version) document.getElementById('sysVer').textContent  = 'v' + d.version;
+    showMsg('sysMsg','✅ System info updated.','ok');
+  } catch (e) {
+    showMsg('sysMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+async function factoryReset() {
+  if (!confirm('⚠ Factory reset will erase all saved settings. Continue?')) return;
+  try {
+    await apiFetch('/reset', { method: 'POST' });
+    showMsg('sysMsg','🗑 Factory reset triggered. Device will reboot.','warn');
+  } catch (e) {
+    showMsg('sysMsg', `❌ ${esc(e.message)}`, 'err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DEVICE SCOPE  ─  mode, NAT, DHCP, channel, LED, debug
+══════════════════════════════════════════════════════════════════════ */
+let _scopeNat  = true;
+let _scopeDhcp = true;
+
+function toggleNat()  { _scopeNat  = !_scopeNat;  document.getElementById('natPill').className  = 'toggle-pill' + (_scopeNat  ? ' on' : ''); }
+function toggleDhcp() { _scopeDhcp = !_scopeDhcp; document.getElementById('dhcpPill').className = 'toggle-pill' + (_scopeDhcp ? ' on' : ''); }
+
+async function loadScope() {
+  try {
+    const d = await (await apiFetch('/scope')).json();
+    if (d.mode !== undefined) document.getElementById('scopeMode').value    = d.mode;
+    if (d.led  !== undefined) document.getElementById('scopeLed').value     = d.led;
+    if (d.chan  !== undefined) document.getElementById('scopeChannel').value = d.chan;
+    if (d.dbg  !== undefined) document.getElementById('scopeDbg').value     = d.dbg;
+    if (d.nat  !== undefined) { _scopeNat  = d.nat  !== '0'; document.getElementById('natPill').className  = 'toggle-pill' + (_scopeNat  ? ' on' : ''); }
+    if (d.dhcp !== undefined) { _scopeDhcp = d.dhcp !== '0'; document.getElementById('dhcpPill').className = 'toggle-pill' + (_scopeDhcp ? ' on' : ''); }
+  } catch (_) {}
+}
+
+async function saveScope() {
+  const mode = document.getElementById('scopeMode').value;
+  const led  = document.getElementById('scopeLed').value;
+  const chan  = document.getElementById('scopeChannel').value;
+  const dbg  = document.getElementById('scopeDbg').value;
+  const el   = document.getElementById('scopeMsg');
+  el.style.display = 'none';
+  try {
+    await apiFetch('/scope', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `mode=${mode}&nat=${_scopeNat?'1':'0'}&dhcp=${_scopeDhcp?'1':'0'}&chan=${chan}&led=${led}&dbg=${dbg}`
+    });
+    el.className = 'msg msg-ok'; el.textContent = '✅ Scope saved. Some changes apply after reboot.';
+  } catch (e) {
+    el.className = 'msg msg-err'; el.textContent = `❌ ${esc(e.message)}`;
+  }
   el.style.display = 'block';
 }
-function esc(s) {
-  return String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/* ══════════════════════════════════════════════════════════════════════
+   AI NETWORK ADVISOR  ─  scores, ranks and advises on WiFi networks
+══════════════════════════════════════════════════════════════════════ */
+let _lastScan = [];
+
+function aiGrade(s) {
+  if (s>=85) return ['A','grade-A'];
+  if (s>=70) return ['B','grade-B'];
+  if (s>=55) return ['C','grade-C'];
+  if (s>=35) return ['D','grade-D'];
+  return ['F','grade-F'];
 }
 
-/* ── Init ────────────────────────────────────────────────────────────── */
+function aiScore(ap, all) {
+  let s = Math.round((Math.max(-90,Math.min(-30,ap.rssi)) + 90) / 60 * 60);
+  if (ap.auth === 0)      s -= 15;   // open — penalty
+  else if (ap.auth >= 4)  s += 20;   // WPA2 / WPA3 — bonus
+  else if (ap.auth >= 2)  s += 10;   // WPA1
+  const peers = all.filter(x => x !== ap && x._ch === ap._ch).length;
+  s -= peers * 5;                    // channel congestion heuristic
+  return Math.max(0, Math.min(100, s));
+}
+
+const WIFI_AUTH_NAMES = ['Open','WEP','WPA','WPA2/WPA','WPA2','WPA3','WPA2+WPA3'];
+
+async function runAiAdvisor() {
+  const box = document.getElementById('aiResults');
+  box.innerHTML = '<p style="color:#90caf9;font-size:.85rem;margin-top:8px;">⏳ Scanning &amp; analysing…</p>';
+  try {
+    const aps = await (await apiFetch('/scan')).json();
+    if (!aps.length) { box.innerHTML = '<p style="color:#fa4d4d;font-size:.85rem;margin-top:8px;">No networks found.</p>'; return; }
+    aps.forEach((a,i) => a._ch = (i % 13)+1);   // pseudo-channel spread
+    _lastScan = aps;
+    const scored = aps.map(a=>({...a,_s:aiScore(a,aps)})).sort((a,b)=>b._s-a._s).slice(0,6);
+    const best   = scored[0];
+    let   html   = '';
+
+    const bgColor = best._s>=70 ? 'rgba(0,180,116,.12)' : 'rgba(250,77,77,.1)';
+    const bdColor = best._s>=70 ? '#4dfa9a50' : '#fa4d4d50';
+    html += `<div class="rec-box" style="background:${bgColor};border-color:${bdColor};">`+
+            `🤖 <b>Best pick:</b> &ldquo;${esc(best.ssid)}&rdquo; — Score <b>${best._s}/100</b>.`+
+            (best.auth===0?' ⚠️ Open network — use with caution.':'')+
+            (best._s>=70?' Expect reliable connectivity.':' Consider a network with stronger signal.')+
+            `</div>`;
+
+    scored.forEach((ap,idx) => {
+      const [letter,cls] = aiGrade(ap._s);
+      const col = ap._s>=75?'#4dfa9a':ap._s>=50?'#fad44d':'#fa4d4d';
+      html += `<div class="net-card${idx===0?' best':''}">`+
+              `<div class="net-header"><span class="net-name">${idx===0?'⭐ ':''}${esc(ap.ssid)}</span>`+
+              `<span class="grade ${cls}">${letter}</span></div>`+
+              `<div class="net-meta">${ap.rssi} dBm &nbsp;·&nbsp; ${WIFI_AUTH_NAMES[ap.auth]??'auth'+ap.auth} &nbsp;·&nbsp; Score ${ap._s}/100</div>`+
+              `<div class="bar-wrap"><div class="bar-fill" style="width:${ap._s}%;background:${col};"></div></div>`+
+              `</div>`;
+    });
+
+    const openN = aps.filter(a=>a.auth===0).length;
+    const weakN = aps.filter(a=>a.rssi<-70).length;
+    html += `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.8rem;color:#90caf9;">`+
+            `📊 <b>${aps.length}</b> networks found.`+
+            (openN?`<br>⚠️ ${openN} open (unsecured) network${openN>1?'s':''} detected.`:'')+
+            (weakN?`<br>📶 ${weakN} network${weakN>1?'s':''} with weak signal (&lt;−70 dBm).`:`<br>✅ All visible networks have adequate signal.`)+
+            `</div>`;
+
+    box.innerHTML = html;
+
+    // Pre-select best AP in WiFi scan list
+    selectWifiNet(best.ssid, best.rssi, best.auth);
+  } catch(e) {
+    box.innerHTML = `<p style="color:#fa4d4d;font-size:.85rem;margin-top:8px;">❌ ${esc(e.message)}</p>`;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   USB / SERIAL PORT SCANNER  (WebSerial API — Chrome / Edge)
+   Identifies ESP32, ESP8266, Arduinos and compatible devices by VID/PID.
+══════════════════════════════════════════════════════════════════════ */
+const ESP_KNOWN_DEVICES = [
+  {vid:0x303A,pid:0x1001,name:'ESP32-S3 (native USB)',       family:'esp'},
+  {vid:0x303A,pid:0x0002,name:'ESP32-S2 (native USB)',       family:'esp'},
+  {vid:0x303A,pid:0x1002,name:'ESP32-S3 JTAG/UART',         family:'esp'},
+  {vid:0x303A,pid:0x0005,name:'ESP32-S2 JTAG',              family:'esp'},
+  {vid:0x303A,pid:0x1003,name:'ESP32-C3 (native USB)',       family:'esp'},
+  {vid:0x303A,pid:0x1004,name:'ESP32-C6 (native USB)',       family:'esp'},
+  {vid:0x303A,pid:0x1005,name:'ESP32-H2 (native USB)',       family:'esp'},
+  {vid:0x10C4,pid:0xEA60,name:'CP2102 / CP2104 (ESP board)', family:'esp'},
+  {vid:0x10C4,pid:0xEA70,name:'CP2105 Dual UART',           family:'esp'},
+  {vid:0x1A86,pid:0x7523,name:'CH340 / CH341 (ESP board)',   family:'esp'},
+  {vid:0x1A86,pid:0x55D4,name:'CH9102 USB-UART',            family:'esp'},
+  {vid:0x1A86,pid:0x5523,name:'CH343 USB-UART',             family:'esp'},
+  {vid:0x0403,pid:0x6001,name:'FTDI FT232RL (ESP / Arduino)',family:'ftdi'},
+  {vid:0x0403,pid:0x6010,name:'FTDI FT2232H',               family:'ftdi'},
+  {vid:0x2341,pid:0x0043,name:'Arduino Uno R3',              family:'arduino'},
+  {vid:0x2341,pid:0x0001,name:'Arduino Mega 2560',           family:'arduino'},
+  {vid:0x2341,pid:0x0036,name:'Arduino Leonardo',            family:'arduino'},
+  {vid:0x2341,pid:0x0042,name:'Arduino Mega 2560 R3',        family:'arduino'},
+  {vid:0x2341,pid:0x8036,name:'Arduino Leonardo (bootldr)',  family:'arduino'},
+  {vid:0x239A,pid:0x8011,name:'Adafruit Feather M0',         family:'esp'},
+  {vid:0x239A,pid:0x8022,name:'Adafruit Feather M4',         family:'esp'},
+  {vid:0x1B4F,pid:0xF016,name:'SparkFun ESP32 Thing',        family:'esp'},
+  {vid:0x303A,pid:0x0012,name:'Espressif USB Bridge',        family:'esp'},
+];
+
+function _vidHex(v){ return '0x'+(v||0).toString(16).toUpperCase().padStart(4,'0'); }
+
+function identifySerialPort(vid, pid) {
+  const m = ESP_KNOWN_DEVICES.find(d=>d.vid===vid&&d.pid===pid);
+  if (m) return m;
+  if (vid===0x303A) return {name:`Espressif USB (PID ${_vidHex(pid)})`,     family:'esp'};
+  if (vid===0x1A86) return {name:`WCH USB-UART (PID ${_vidHex(pid)})`,      family:'esp'};
+  if (vid===0x10C4) return {name:`SiLabs CP210x (PID ${_vidHex(pid)})`,     family:'esp'};
+  if (vid===0x2341) return {name:`Arduino (PID ${_vidHex(pid)})`,           family:'arduino'};
+  if (vid===0x0403) return {name:`FTDI (PID ${_vidHex(pid)})`,              family:'ftdi'};
+  return null;
+}
+
+function _portEntryHtml(info, vid, pid) {
+  const fam   = info ? info.family : 'unk';
+  const icon  = {esp:'🔌', arduino:'⚡', ftdi:'🔧'}[fam] || '🖥';
+  const tCls  = {esp:'tag-esp', arduino:'tag-arduino', ftdi:'tag-ftdi', unk:'tag-unk'}[fam] || 'tag-unk';
+  const tLbl  = {esp:'ESP', arduino:'Arduino', ftdi:'FTDI', unk:'?'}[fam] || '?';
+  const name  = info ? esc(info.name) : `Unknown device (VID ${_vidHex(vid)})`;
+  return `<div class="port-entry">`+
+         `<span class="port-icon">${icon}</span>`+
+         `<div class="port-info">`+
+         `<div class="port-name">${name} <span class="tag ${tCls}">${tLbl}</span></div>`+
+         `<div class="port-detail">VID ${_vidHex(vid)} &nbsp;·&nbsp; PID ${_vidHex(pid)}</div>`+
+         `</div></div>`;
+}
+
+function _renderPorts(ports) {
+  const el = document.getElementById('portList');
+  if (!ports.length) { el.innerHTML='<div class="no-serial">No authorised ESP/Arduino ports found on this browser.</div>'; return; }
+  el.innerHTML = ports.map(p => {
+    const {usbVendorId:v, usbProductId:p2} = p.getInfo();
+    return _portEntryHtml(identifySerialPort(v,p2), v, p2);
+  }).join('');
+}
+
+async function listGrantedPorts() {
+  const msg = document.getElementById('portMsg');
+  msg.style.display = 'none';
+  if (!navigator.serial) {
+    msg.className='msg msg-err'; msg.textContent='⚠️ WebSerial not available. Use Chrome or Edge.'; msg.style.display='block'; return;
+  }
+  _renderPorts(await navigator.serial.getPorts());
+}
+
+async function scanPorts() {
+  const msg  = document.getElementById('portMsg');
+  const list = document.getElementById('portList');
+  msg.style.display='none'; list.innerHTML='';
+  if (!navigator.serial) {
+    msg.className='msg msg-err'; msg.textContent='⚠️ WebSerial API not supported. Use Chrome 89+ or Edge 89+.'; msg.style.display='block'; return;
+  }
+  const filters = ESP_KNOWN_DEVICES.map(d=>({usbVendorId:d.vid,usbProductId:d.pid}));
+  try {
+    await navigator.serial.requestPort({filters});   // prompts OS device picker
+    _renderPorts(await navigator.serial.getPorts());
+  } catch(e) {
+    if (e.name==='NotFoundError') {
+      msg.style.cssText='display:block;margin-top:8px;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.06);color:#7899cc;font-size:.82rem;';
+      msg.textContent='🔍 No matching ESP/Arduino device found. Is your device plugged in and CH340/CP2102 drivers installed?';
+    } else if (e.name!=='AbortError') {
+      msg.className='msg msg-err'; msg.textContent=`❌ ${esc(e.message)}`; msg.style.display='block';
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BROWSER GPS  ─  precise geolocation + Nominatim reverse geocoding
+══════════════════════════════════════════════════════════════════════ */
+async function browserGeoLocate() {
+  if (!navigator.geolocation) {
+    showMsg('locMsg', '❌ Browser geolocation not supported on this device.', 'err');
+    return;
+  }
+  showMsg('locMsg', '🛰 Requesting GPS from browser — allow when the permission prompt appears…', 'warn');
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+      document.getElementById('latInput').value = lat.toFixed(6);
+      document.getElementById('lonInput').value = lon.toFixed(6);
+      try {
+        const r = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+          { headers: { 'Accept-Language': 'en', 'User-Agent': 'IONITY-Dongle-Portal/1.0' } }
+        );
+        const d = await r.json();
+        const city    = d.address?.city || d.address?.town || d.address?.village || d.address?.county || '';
+        const country = d.address?.country || '';
+        const label   = [city, country].filter(Boolean).join(', ');
+        document.getElementById('locText').value = label;
+        showMsg('locMsg',
+          `🛰 GPS located: ${label} (±${Math.round(accuracy)}m accuracy). Click 💾 Save Location to store.`, 'ok');
+      } catch (_) {
+        document.getElementById('locText').value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        showMsg('locMsg',
+          `🛰 GPS coords set (±${Math.round(accuracy)}m). Reverse geocoding unavailable — type city name manually.`,
+          'warn');
+      }
+    },
+    err => {
+      const msgs = {
+        1: 'Permission denied — allow location access in your browser settings',
+        2: 'Position unavailable — check GPS / network connectivity',
+        3: 'Timed out — try again or move to a location with better GPS signal'
+      };
+      showMsg('locMsg', `❌ GPS error: ${msgs[err.code] || err.message}`, 'err');
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MAC SPOOFER & LOCAL NETWORK SCANNER
+══════════════════════════════════════════════════════════════════════ */
+const MAC_VENDOR_PREFIXES = [
+  ['Apple',   ['A4:C3:F0','A8:5C:2C','18:65:90','3C:22:FB','F0:D1:A9','00:03:93']],
+  ['Samsung', ['04:4E:AF','B4:3A:28','50:C7:BF','D8:57:EF','CC:07:AB','8C:77:12']],
+  ['Intel',   ['00:23:14','3C:D9:2B','60:F6:77','8C:8D:28','AC:37:43','94:65:9C']],
+  ['Google',  ['F4:F5:D8','54:60:09','3C:5A:B4','A4:77:33','DA:A1:19']],
+  ['TP-Link', ['14:CC:20','A0:F3:C1','50:3E:AA','B0:95:75','30:DE:4B']],
+  ['Xiaomi',  ['28:6C:07','34:CE:00','64:09:80','78:02:F8','AC:F7:F3']],
+  ['Asus',    ['00:0C:6E','04:D4:C4','10:BF:48','2C:56:DC','50:46:5D']],
+];
+
+function _buildMac(type) {
+  const b = Array.from({length:6}, () => Math.floor(Math.random() * 256));
+  if (type === 'local') {
+    b[0] = (b[0] & 0xFC) | 0x02;   // locally administered, unicast
+  } else if (type === 'vendor') {
+    const entry  = MAC_VENDOR_PREFIXES[Math.floor(Math.random() * MAC_VENDOR_PREFIXES.length)];
+    const prefix = entry[1][Math.floor(Math.random() * entry[1].length)]
+                     .split(':').map(h => parseInt(h, 16));
+    b[0] = prefix[0]; b[1] = prefix[1]; b[2] = prefix[2];
+  }
+  b[0] &= 0xFE;   // always unicast
+  return b.map(x => x.toString(16).padStart(2,'0').toUpperCase()).join(':');
+}
+
+function formatMacInput(el) {
+  let v = el.value.toUpperCase().replace(/[^0-9A-F]/g, '').substring(0, 12);
+  el.value = v.match(/.{1,2}/g)?.join(':') || v;
+}
+
+function fillRandomPreview() {
+  document.getElementById('manualMac').value = _buildMac(document.getElementById('macType').value);
+}
+
+async function loadCurrentMac() {
+  try {
+    const d = await (await apiFetch('/mac')).json();
+    document.getElementById('curMac').textContent = d.mac || '—';
+  } catch (_) {
+    document.getElementById('curMac').textContent = 'Unavailable';
+  }
+}
+
+async function randomizeMac() {
+  const mac = _buildMac(document.getElementById('macType').value);
+  document.getElementById('manualMac').value = mac;
+  await _applyMac(mac);
+}
+
+async function restoreOriginalMac() {
+  try {
+    await apiFetch('/mac', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: 'action=restore'
+    });
+    showMsg('macMsg', '↩ Original MAC restored — dongle will reconnect to AP…', 'ok');
+    setTimeout(loadCurrentMac, 2000);
+  } catch (e) { showMsg('macMsg', `❌ ${esc(e.message)}`, 'err'); }
+}
+
+async function setCustomMac() {
+  const mac = document.getElementById('manualMac').value.trim().toUpperCase();
+  if (!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(mac)) {
+    showMsg('macMsg', '❌ Invalid format — use AA:BB:CC:DD:EE:FF', 'err'); return;
+  }
+  await _applyMac(mac);
+}
+
+async function _applyMac(mac) {
+  try {
+    await apiFetch('/mac', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `mac=${encodeURIComponent(mac)}&action=set`
+    });
+    document.getElementById('curMac').textContent = mac;
+    showMsg('macMsg', `✅ MAC changed to ${mac}. Reconnecting to upstream AP…`, 'ok');
+  } catch (e) { showMsg('macMsg', `❌ ${esc(e.message)}`, 'err'); }
+}
+
+async function scanLocalMacs() {
+  const st = document.getElementById('macScanStatus');
+  const tb = document.getElementById('macScanTable');
+  st.style.display = 'block';
+  st.textContent   = '📡 ARP sweep running — probing all /24 subnet hosts…';
+  tb.style.display = 'none';
+  try {
+    const d = await (await apiFetch('/mac/scan')).json();
+    _renderMacTable(d);
+    st.textContent = `✅ ARP sweep complete — ${d.length} host(s) found (hidden nodes included).`;
+  } catch (e) { st.textContent = `❌ ARP scan failed: ${esc(e.message)}`; }
+}
+
+async function scanPassiveMacs() {
+  const st = document.getElementById('macScanStatus');
+  const tb = document.getElementById('macScanTable');
+  st.style.display = 'block';
+  st.textContent   = '👁 Passive radio sniff active — collecting frames for ~10 s…';
+  tb.style.display = 'none';
+  try {
+    const d = await (await apiFetch('/mac/passive')).json();
+    _renderMacTable(d);
+    st.textContent = `👁 Passive sniff done — ${d.length} unique MAC(s) observed in the air.`;
+  } catch (e) { st.textContent = `❌ Passive sniff failed: ${esc(e.message)}`; }
+}
+
+function _renderMacTable(list) {
+  const tb   = document.getElementById('macScanTable');
+  const rows = document.getElementById('macScanRows');
+  rows.innerHTML = !list.length
+    ? '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No devices found</td></tr>'
+    : list.map((d, i) =>
+        `<tr>
+          <td style="color:var(--muted);font-size:.7rem;">${i+1}</td>
+          <td style="font-family:monospace;font-size:.75rem;">
+            <a href="#" style="color:var(--accent);text-decoration:none;"
+               onclick="document.getElementById('blockMac').value='${esc(d.mac)}';return false;"
+               title="Copy to Client Manager">${esc(d.mac)}</a></td>
+          <td>${esc(d.ip||'—')}</td>
+          <td style="font-size:.72rem;color:var(--muted);">${esc(d.vendor||'Unknown')}</td>
+          <td><span class="badge ${d.hidden ? 'badge-bad':'badge-ok'}">${d.hidden?'👁 Hidden':'📡 Visible'}</span></td>
+        </tr>`).join('');
+  tb.style.display = '';
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   AI NETWORK ASSISTANT  ─  health score, telemetry analysis, chat
+══════════════════════════════════════════════════════════════════════ */
+let _aiCtx = {};   // latest telemetry snapshot
+
+function _aiCalcScore() {
+  let s = 100; const issues = [];
+  const st = _aiCtx.status  || {};
+  const tr = _aiCtx.traffic || {};
+  const rssi = parseInt(st.rssi) || 0;
+  const heap = st.heap || Infinity;
+  const temp = st.temp || 0;
+
+  if      (rssi < -80) { s -= 30; issues.push(`Very weak signal (${rssi} dBm) — move closer to router`); }
+  else if (rssi < -70) { s -= 15; issues.push(`Weak signal (${rssi} dBm) — consider repositioning`); }
+  else if (rssi < -60) { s -=  5; }
+
+  if (st.state !== 2) { s -= 40; issues.push('Not connected to any WiFi network'); }
+
+  if ((tr.tx_bps||0) > 80*1048576) { s -= 8; issues.push('Near-saturated upload bandwidth'); }
+  if ((tr.rx_bps||0) > 80*1048576) { s -= 8; issues.push('Near-saturated download — may cause latency'); }
+
+  if      (heap < 20000) { s -= 15; issues.push(`Low free heap (${(heap/1024).toFixed(0)} KB) — reboot recommended`); }
+  else if (heap < 40000) { s -=  5; }
+
+  if      (temp > 80) { s -= 15; issues.push(`High chip temperature (${temp.toFixed?temp.toFixed(1):temp}°C) — check airflow`); }
+  else if (temp > 70) { s -=  5; }
+
+  return { score: Math.max(0, Math.min(100, Math.round(s))), issues };
+}
+
+async function runAiAssist(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Analysing…'; }
+  try {
+    const [st, tr] = await Promise.all([
+      apiFetch('/status').then(r=>r.json()).catch(()=>({})),
+      apiFetch('/traffic').then(r=>r.json()).catch(()=>({}))
+    ]);
+    _aiCtx.status = st; _aiCtx.traffic = tr;
+  } catch(_) {}
+
+  const { score, issues } = _aiCalcScore();
+  const st = _aiCtx.status || {}; const tr = _aiCtx.traffic || {};
+  const colour = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
+
+  const scoreEl = document.getElementById('aiAssistScore');
+  const barEl   = document.getElementById('aiAssistScoreBar');
+  scoreEl.textContent    = score + ' / 100';
+  scoreEl.style.color    = colour;
+  barEl.style.width      = score + '%';
+  barEl.style.background = colour;
+  document.getElementById('aiAssistScoreLabel').textContent =
+    score >= 85 ? '✅ Excellent — network is healthy' :
+    score >= 70 ? '👍 Good — minor improvements possible' :
+    score >= 50 ? '⚠ Fair — issues detected' : '🚨 Poor — action required';
+
+  const recEl = document.getElementById('aiAssistRecs');
+  recEl.innerHTML = !issues.length
+    ? '<span style="color:var(--green);">✅ No issues detected — network is well configured.</span>'
+    : issues.map(r =>
+        `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+          <span style="color:var(--amber);">⚠</span>
+          <span style="color:var(--text);">${esc(r)}</span>
+        </div>`).join('') +
+      `<div style="margin-top:6px;font-size:.7rem;color:var(--muted);">Analysis from real-time ESP32 telemetry</div>`;
+
+  const rssi   = parseInt(st.rssi) || -100;
+  const rxMbps = (tr.rx_bps||0)/1048576;
+  const txMbps = (tr.tx_bps||0)/1048576;
+
+  document.getElementById('aiAssistAnomaly').textContent =
+    (rxMbps > 70 || txMbps > 70) ? '🔴 High load' :
+    (rxMbps > 30 || txMbps > 30) ? '🟡 Elevated'  : '🟢 Normal';
+  document.getElementById('aiAssistChan').textContent =
+    rssi > -50 ? '1, 6 or 11' : rssi > -65 ? 'Ch 6 or 11' : 'Ch 11 (sparsest)';
+  document.getElementById('aiAssistQos').textContent =
+    rxMbps > 20 ? '🎬 Streaming' : rxMbps > 8 ? '⚖ Balanced' : '🎮 Gaming';
+  document.getElementById('aiAssistSec').textContent =
+    st.state === 2 ? (rssi > -40 ? '🔐 Strong' : '🔒 OK') : '⚠ No link';
+
+  _aiLog(`🧠 Analysis done — Health: ${score}/100. ` +
+    (issues.length ? `${issues.length} issue(s): ${issues[0].split('—')[0].trim()}.` : 'All healthy!'), 'ai');
+
+  if (btn) { btn.disabled = false; btn.textContent = '🧠 Run Full Analysis'; }
+}
+
+function _aiLog(text, role = 'user') {
+  const log = document.getElementById('aiAssistLog');
+  if (log.querySelector('span[style]')) log.innerHTML = '';
+  const label = role === 'ai' ? '🤖 AI' : '👤 You';
+  const cls   = role === 'ai' ? 'ai-bubble-ai' : 'ai-bubble-user';
+  log.insertAdjacentHTML('beforeend',
+    `<div style="margin-bottom:7px;">
+      <span style="font-size:.68rem;color:var(--muted);">${label}</span><br/>
+      <span class="${cls}">${esc(text)}</span>
+    </div>`);
+  log.scrollTop = log.scrollHeight;
+}
+
+const _aiKB = [
+  [/slow|speed|fast|mbps|bandwidth|throughput/i, () => {
+    const dl = ((_aiCtx.traffic?.rx_bps)||0)/1048576;
+    return dl > 0
+      ? `Current download is ${dl.toFixed(1)} Mbps. ${dl>50?'Excellent — no bottleneck.':dl<1?'Very slow — check RSSI and router load.':'Mid-range throughput.'}`
+      : 'No traffic data yet — open Traffic Monitor and click Refresh first, then re-ask.';
+  }],
+  [/rssi|signal|weak|dbm|strength/i, () => {
+    const r = _aiCtx.status?.rssi;
+    return r
+      ? `RSSI: ${r} dBm. ${r>-55?'Excellent 📶':r>-70?'Good.':r>-80?'Weak — reposition closer to router.':'Very weak — likely causing drops and slow speeds.'}`
+      : 'No signal data — run Full Analysis first.';
+  }],
+  [/channel|interfere|overlap|2\.4|frequency/i,
+    () => 'Non-overlapping channels on 2.4 GHz are 1, 6 and 11. '+'If congested, channel 11 is usually least busy. Enable auto-channel on your router for best results.'],
+  [/secur|hack|safe|wpa|encrypt|vpn/i,
+    () => 'The portal runs HTTPS (TLS, self-signed cert) — management traffic is encrypted. '+'Use WPA2-PSK or WPA3 on your upstream WiFi. MAC spoofing adds a privacy layer but is not a substitute for WPA encryption.'],
+  [/mac|spoof|address|randomize|randomise/i,
+    () => 'Use the MAC Spoofer panel above to change the dongle\'s wireless MAC. '+'Locally Administered is safest for privacy. Vendor-prefix spoofing makes the device appear as a specific brand. '+'ARP Sweep + Passive Sniff can locate hidden devices on your subnet.'],
+  [/locat|gps|city|country|region|coordinate/i,
+    () => 'Location is stored in ESP32 NVS flash for regulatory channel selection. '+'Use 🛰 GPS for precise browser coordinates (prompts permission) or 🌐 IP Auto for a quick city estimate.'],
+  [/temp|heat|hot|celsius/i, () => {
+    const t = _aiCtx.status?.temp;
+    return t
+      ? `Chip temp: ${typeof t==='number'?t.toFixed(1):t}°C. ${t>80?'🔴 Too hot — ensure airflow.':t>65?'🟡 Warm but OK.':'🟢 Normal.'}`
+      : 'No temperature data — run Full Analysis first.';
+  }],
+  [/heap|memory|ram|out of memory/i, () => {
+    const h = _aiCtx.status?.heap;
+    return h
+      ? `Free heap: ${(h/1024).toFixed(0)} KB. ${h<20000?'⚠ Low — reboot now.':h<40000?'Moderate — monitor.':'✅ Healthy.'}`
+      : 'No heap data — run Full Analysis first.';
+  }],
+  [/reboot|restart|boot/i,
+    () => 'Open the System section and click Factory Reset (erases settings), '+'or power-cycle the USB dongle for a soft-reboot that preserves settings.'],
+  [/qos|quality|priority|gaming|stream|voip/i,
+    () => 'Open NetLimiter → QoS Traffic Priority. For gaming: "Gaming / Low-latency first". For 4K streaming: "Streaming first". Balanced fits mixed use.'],
+  [/client|device|connect|how many/i, () => {
+    const c = _aiCtx.traffic?.clients;
+    return c!=null
+      ? `${c} client(s) connected. Use Client Manager to set per-device caps or block specific MACs.`
+      : 'Open Traffic Monitor and refresh to see the client count.';
+  }],
+  [/diagnos|problem|issue|broken|not work/i, () => {
+    const { score, issues } = _aiCalcScore();
+    return score >= 80
+      ? `No major issues — health score is ${score}/100. Run Full Analysis for details.`
+      : `Health: ${score}/100. Top issue: ${issues[0]||'unknown'}. Check the relevant panel above.`;
+  }],
+  [/optimis|optimiz|improve|better|tweak/i, () => {
+    const tips = [
+      'Set a download cap in NetLimiter to prevent one device hogging the link.',
+      'Enable QoS to match your primary use-case (gaming / streaming / VoIP).',
+      'Move the dongle closer to the router — each 3 dBm RSSI gain roughly doubles effective range.',
+      'Use channel 6 or 11 on 2.4 GHz if your neighbourhood is congested.',
+      'Randomize MAC periodically to improve privacy on public/shared networks.',
+    ];
+    return tips[Math.floor(Math.random()*tips.length)];
+  }],
+  [/traffic|explain|bytes|rx|tx|upload|download/i, () => {
+    const tr = _aiCtx.traffic||{};
+    return tr.tx_bytes!=null
+      ? `Sent: ${fmtBytes(tr.tx_bytes)} (${fmtRate(tr.tx_bps)} now) · Received: ${fmtBytes(tr.rx_bytes)} (${fmtRate(tr.rx_bps)} now) · ${tr.clients??'?'} client(s).`
+      : 'Open Traffic Monitor and click Refresh first, then re-ask.';
+  }],
+  [/ota|update|firmware|version/i,
+    () => `Firmware v${_aiCtx.status?.version||'?'}. OTA updates can be pushed via /ota endpoint. Keep firmware current for security patches.`],
+  [/hello|hi|hey|what can you do/i,
+    () => 'Hi! I can help with: signal strength, bandwidth, QoS, channel selection, MAC spoofing, location, temperature, memory, security and traffic analysis. Just ask!'],
+];
+
+function _aiProcess(q) {
+  for (const [re, fn] of _aiKB) if (re.test(q)) return fn();
+  return `I don't have a specific answer for "${q}". Try: signal, speed, channel, security, MAC, temperature, memory, clients, traffic or optimisation.`;
+}
+
+function aiAsk() {
+  const input = document.getElementById('aiAssistInput');
+  const q = input.value.trim();
+  if (!q) return;
+  _aiLog(q, 'user');
+  input.value = '';
+  setTimeout(() => _aiLog(_aiProcess(q), 'ai'), 250);
+}
+
+function aiQuickAsk(q) {
+  document.getElementById('aiAssistInput').value = q;
+  aiAsk();
+}
+
+function clearAiChat() {
+  document.getElementById('aiAssistLog').innerHTML =
+    '<span style="color:var(--muted);">Type a question about your network, or tap a quick prompt below…</span>';
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   FILE MANAGER  —  SPIFFS read / write + OTA install
+   Endpoints used:
+     GET  /fs/list              → JSON { total, used, files:[{name,size}…] }
+     GET  /fs/read?name=<f>     → octet-stream download
+     POST /fs/write             → raw body, header X-Filename: <name>
+     POST /fs/delete            → body: name=<f>
+     POST /fs/install           → body: name=<f>  (SPIFFS→OTA, reboot)
+     POST /update               → raw binary, existing OTA handler
+══════════════════════════════════════════════════════════════════════ */
+
+let fmFile = null; // currently selected File object
+
+/* ─ drag-and-drop helpers ─ */
+function fmDragOver(e) {
+  e.preventDefault();
+  document.getElementById('fmUploadZone').classList.add('drag-over');
+}
+function fmDragLeave() {
+  document.getElementById('fmUploadZone').classList.remove('drag-over');
+}
+function fmDrop(e) {
+  e.preventDefault();
+  fmDragLeave();
+  if (e.dataTransfer.files.length) fmFileChosen(e.dataTransfer.files[0]);
+}
+
+/* Called when a file is selected (picker or drop) */
+function fmFileChosen(file) {
+  if (!file) return;
+  fmFile = file;
+  const isBin = file.name.toLowerCase().endsWith('.bin');
+  document.getElementById('fmSelName').textContent = file.name;
+  document.getElementById('fmSelSize').textContent = fmtBytes(file.size);
+  document.getElementById('fmActions').style.display = 'block';
+  document.getElementById('fmInstallBtn').style.display =
+    isBin ? 'inline-block' : 'none';
+  document.getElementById('fmUzText').textContent =
+    '\u2705 ' + file.name + ' selected';
+}
+
+/* Show / hide progress */
+function fmProgress(pct, label) {
+  const wrap = document.getElementById('fmProgressWrap');
+  const fill = document.getElementById('fmProgressFill');
+  const text = document.getElementById('fmProgressText');
+  if (pct === null) {
+    wrap.style.display = 'none';
+    text.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+  fill.style.width   = pct + '%';
+  if (label) { text.style.display = 'block'; text.textContent = label; }
+  else         { text.style.display = 'none'; }
+}
+
+/* Generic XHR upload helper — returns a Promise */
+function fmXhrUpload(url, headers, body) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    Object.entries(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v));
+    xhr.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const pct = Math.round((e.loaded / e.total) * 100);
+      fmProgress(pct,
+        `${pct}\u202f%  \u2014  ${fmtBytes(e.loaded)} / ${fmtBytes(e.total)}`);
+    };
+    xhr.onload  = () => xhr.status < 300 ? resolve(xhr) : reject(xhr);
+    xhr.onerror = ()  => reject(new Error('Network error'));
+    xhr.send(body);
+  });
+}
+
+/* ▶ Save file to SPIFFS */
+async function fmUploadToSpiffs() {
+  if (!fmFile) return;
+  const safeName = fmFile.name.replace(/[^a-zA-Z0-9._\-]/g, '_');
+  fmProgress(0, 'Uploading to SPIFFS…');
+  try {
+    await fmXhrUpload('/fs/write',
+      { 'Content-Type': 'application/octet-stream',
+        'X-Filename':   safeName },
+      fmFile);
+    fmProgress(null);
+    showMsg('fmMsg', `\u2705 ${safeName} saved to SPIFFS.`, 'ok');
+    fmLoadFiles();
+  } catch (e) {
+    fmProgress(null);
+    showMsg('fmMsg',
+      `\u274c Upload failed (${e.status || e.message || 'error'})`, 'err');
+  }
+}
+
+/* ⚡ Direct OTA — stream .bin straight to /update (bypass SPIFFS) */
+async function fmInstallDirect() {
+  if (!fmFile) return;
+  if (!confirm(
+    `\u26a0 Flash ${fmFile.name} as new firmware?\n` +
+    `The device will reboot automatically.`)) return;
+  fmProgress(0, 'Flashing firmware\u2026');
+  try {
+    await fmXhrUpload('/update',
+      { 'Content-Type': 'application/octet-stream' },
+      fmFile);
+    fmProgress(100, null);
+    showMsg('fmMsg',
+      '\u2705 Firmware flashed! Device is rebooting\u2026', 'ok');
+  } catch (e) {
+    fmProgress(null);
+    showMsg('fmMsg',
+      `\u274c OTA failed (${e.status || e.message || 'error'})`, 'err');
+  }
+}
+
+/* ⚡ Install from SPIFFS — ESP reads file itself and flashes (no re-upload) */
+async function fmInstallFromSpiffs(name) {
+  if (!confirm(
+    `\u26a0 Install ${name} as new firmware?\n` +
+    `The ESP reads the file from SPIFFS and reboots.`)) return;
+  try {
+    await apiFetch('/fs/install', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    `name=${encodeURIComponent(name)}`
+    });
+    showMsg('fmMsg',
+      '\u2705 OTA install triggered \u2014 device is rebooting\u2026', 'ok');
+  } catch (e) {
+    showMsg('fmMsg', `\u274c Install failed: ${esc(e.message)}`, 'err');
+  }
+}
+
+/* 🗑 Delete file */
+async function fmDeleteFile(name) {
+  if (!confirm(`Delete ${name}?`)) return;
+  try {
+    await apiFetch('/fs/delete', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    `name=${encodeURIComponent(name)}`
+    });
+    showMsg('fmMsg', `\ud83d\uddd1 ${name} deleted.`, 'ok');
+    fmLoadFiles();
+  } catch (e) {
+    showMsg('fmMsg', `\u274c ${esc(e.message)}`, 'err');
+  }
+}
+
+/* 🔄 Load file list from /fs/list */
+async function fmLoadFiles() {
+  const tbody = document.getElementById('fmFileRows');
+  tbody.innerHTML =
+    '<tr><td colspan="3" style="color:var(--muted);text-align:center;">' +
+    'Loading\u2026</td></tr>';
+  try {
+    const d = await (await apiFetch('/fs/list')).json();
+
+    /* Update usage bar */
+    if (d.total) {
+      const pct = Math.round((d.used / d.total) * 100);
+      const bar = document.getElementById('fmUsageBar');
+      bar.style.display = 'block';
+      document.getElementById('fmUsageText').textContent =
+        `SPIFFS: ${fmtBytes(d.used)} used of ${fmtBytes(d.total)}` +
+        ` \u2014 ${fmtBytes(d.total - d.used)} free`;
+      document.getElementById('fmUsagePct').textContent = pct + '%';
+      document.getElementById('fmUsageFill').style.width = pct + '%';
+    }
+
+    const files = d.files || [];
+    if (!files.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="3" style="color:var(--muted);' +
+        'text-align:center;padding:14px;">No files stored on device</td></tr>';
+      return;
+    }
+    tbody.innerHTML = files.map(f => {
+      const isBin = f.name.toLowerCase().endsWith('.bin');
+      const instBtn = isBin
+        ? `<button class="fs-action-btn fs-btn-inst"
+             onclick="fmInstallFromSpiffs('${esc(f.name)}')">\u26a1 Install</button>`
+        : '';
+      return `<tr>
+        <td style="font-family:monospace;font-size:.78rem;">${esc(f.name)}</td>
+        <td style="font-size:.77rem;color:var(--muted);">${fmtBytes(f.size)}</td>
+        <td style="white-space:nowrap;">
+          <a class="fs-action-btn fs-btn-dl"
+             href="/fs/read?name=${encodeURIComponent(f.name)}"
+             download="${esc(f.name)}">\u2b07 Get</a>
+          ${instBtn}
+          <button class="fs-action-btn fs-btn-del" style="margin-left:4px;"
+            onclick="fmDeleteFile('${esc(f.name)}')">\ud83d\uddd1 Del</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML =
+      `<tr><td colspan="3" style="color:var(--red);">` +
+      `Error: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+/* Opens/closes the File Manager section; auto-loads list on first open */
+function fmToggleSection(btn) {
+  const body = document.getElementById('fmBody');
+  const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+  toggleSection('fmBody', btn);
+  if (!isOpen) fmLoadFiles(); // first open → fetch file list immediately
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHTING STUDIO  ·  WS2812B real-time LED control + animated preview
+   Matches firmware effect engine math exactly (same sine/exp formulas).
+══════════════════════════════════════════════════════════════════════ */
+
+const _LED = { r:0, g:220, b:64, effect:2, period_ms:1000 };
+const _LED_FX_NAMES = ['Solid','Blink','Breathe','Pulse','Strobe','Wave'];
+let   _ledRaf = null;
+let   _ledRafT0 = null;
+let   _ledPanelReady = false;
+
+const _LED_PRESETS = [
+  { name:'🌊 Ocean Breathe',    desc:'Calm aqua breathe',          r:0,   g:160, b:240, effect:2, period_ms:2800 },
+  { name:'🟢 Connected',        desc:'Solid green — network OK',   r:0,   g:200, b:40,  effect:0, period_ms:0    },
+  { name:'🧠 Neural Pulse',     desc:'AI thinking — cyan pulse',   r:20,  g:240, b:200, effect:3, period_ms:900  },
+  { name:'🔴 Alert Flash',      desc:'Red blink — urgent event',   r:255, g:0,   b:0,   effect:1, period_ms:200  },
+  { name:'🌙 Night Mode',       desc:'Ultra-dim amber, no glare',  r:28,  g:12,  b:0,   effect:0, period_ms:0    },
+  { name:'🔵 Portal Mode',      desc:'Setup blink — sapphire',     r:0,   g:30,  b:200, effect:1, period_ms:400  },
+  { name:'🌅 Sunrise',          desc:'Warm golden breathe',        r:255, g:80,  b:0,   effect:2, period_ms:3000 },
+  { name:'⚡ Strobe White',     desc:'Fast burst — high alert',    r:200, g:200, b:200, effect:4, period_ms:0    },
+  { name:'🟣 Deep Violet',      desc:'Steady indigo signal',       r:80,  g:0,   b:200, effect:0, period_ms:0    },
+  { name:'🌊 Teal Wave',        desc:'Data-flow wave pattern',     r:0,   g:180, b:180, effect:5, period_ms:1200 },
+  { name:'🔥 Fire Flicker',     desc:'Amber pulse — hot activity', r:255, g:55,  b:0,   effect:3, period_ms:700  },
+  { name:'❄ Arctic Ice',        desc:'Cold blue slow breathe',     r:0,   g:100, b:255, effect:2, period_ms:4000 },
+  { name:'💚 Matrix Green',     desc:'Neon pulse — hacker vibe',   r:0,   g:255, b:30,  effect:3, period_ms:600  },
+  { name:'🌈 Cosmic Breathe',   desc:'Lavender smooth cycle',      r:160, g:0,   b:255, effect:2, period_ms:2200 },
+];
+
+function _ledRgbToHex(r,g,b){
+  return '#'+[r,g,b].map(v=>Math.min(255,Math.max(0,v)).toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+function _ledHexToRgb(h){
+  return { r:parseInt(h.slice(1,3),16)||0, g:parseInt(h.slice(3,5),16)||0, b:parseInt(h.slice(5,7),16)||0 };
+}
+
+function _ledSync(){
+  const h = _ledRgbToHex(_LED.r,_LED.g,_LED.b);
+  const cp = document.getElementById('ledColorPicker');
+  const hx = document.getElementById('ledHex');
+  const spd = document.getElementById('ledSpeed');
+  const spv = document.getElementById('ledSpeedVal');
+  if(cp)  cp.value  = h.toLowerCase();
+  if(hx)  hx.value  = h;
+  if(spd) spd.value = _LED.period_ms;
+  if(spv) spv.textContent = _LED.period_ms + ' ms';
+  document.getElementById('ledR').textContent  = 'R: '+_LED.r;
+  document.getElementById('ledG').textContent  = 'G: '+_LED.g;
+  document.getElementById('ledB').textContent  = 'B: '+_LED.b;
+  document.querySelectorAll('.effect-btn').forEach(b=>
+    b.classList.toggle('active', parseInt(b.dataset.eff,10)===_LED.effect));
+  const stxt = document.getElementById('ledStateTxt');
+  if(stxt) stxt.textContent =
+    (_LED_FX_NAMES[_LED.effect]||'?')+' · '+h+' · '+(_LED.period_ms||0)+'ms';
+}
+
+// Realtime preview — mirrors the C firmware render loop (50 Hz)
+function _ledStartPreview(){
+  if(_ledRaf) cancelAnimationFrame(_ledRaf);
+  _ledRafT0 = performance.now();
+  function frame(ts){
+    const t = (ts - _ledRafT0) / 1000;
+    const {r,g,b,effect,period_ms} = _LED;
+    const P = Math.max(0.08, period_ms/1000);
+    let sc = 1.0;
+    switch(effect){
+      case 0: sc=1.0; break;  // SOLID
+      case 1: { const ph=(t%P)/P; sc=ph<0.5?1.0:0.0; break; }  // BLINK
+      case 2: { const ph=(t%P)/P*Math.PI*2; sc=(Math.sin(ph-Math.PI/2)+1)*0.5; break; }  // BREATHE
+      case 3: { const tn=(t%P)/P; sc=Math.exp(-4.5*tn); break; }  // PULSE
+      case 4: { sc=(t%0.08)<0.04?1.0:0.0; break; }  // STROBE ~12.5 Hz
+      case 5: { // WAVE: linear rise 70%, linear fall 30%
+        const tn=(t%P)/P;
+        sc = tn<0.7 ? tn/0.7 : Math.max(0,1-(tn-0.7)/0.3);
+        break;
+      }
+    }
+    const dr=Math.round(r*sc), dg=Math.round(g*sc), db=Math.round(b*sc);
+    const hex='#'+[dr,dg,db].map(v=>v.toString(16).padStart(2,'0')).join('');
+    const ga=`rgba(${dr},${dg},${db},0.88)`;
+    const gb=`rgba(${dr},${dg},${db},0.38)`;
+    const bulb=document.getElementById('ledBulb');
+    if(bulb){
+      bulb.style.background=hex;
+      bulb.style.boxShadow=
+        `0 0 ${10+sc*22}px ${3+sc*9}px ${ga},`+
+        `0 0 ${26+sc*42}px ${8+sc*20}px ${gb}`;
+    }
+    _ledRaf=requestAnimationFrame(frame);
+  }
+  _ledRaf=requestAnimationFrame(frame);
+}
+
+function _ledOnColor(hex){
+  const {r,g,b}=_ledHexToRgb(hex);
+  _LED.r=r;_LED.g=g;_LED.b=b;
+  document.getElementById('ledHex').value=hex.toUpperCase();
+  document.getElementById('ledR').textContent='R:'+r;
+  document.getElementById('ledG').textContent='G:'+g;
+  document.getElementById('ledB').textContent='B:'+b;
+  const stxt=document.getElementById('ledStateTxt');
+  if(stxt) stxt.textContent=(_LED_FX_NAMES[_LED.effect]||'?')+' · '+hex.toUpperCase()+' · '+_LED.period_ms+'ms';
+}
+
+function _ledOnHex(val){
+  if(/^#[0-9A-Fa-f]{6}$/.test(val)){
+    const {r,g,b}=_ledHexToRgb(val);
+    _LED.r=r;_LED.g=g;_LED.b=b;
+    document.getElementById('ledColorPicker').value=val.toLowerCase();
+    document.getElementById('ledR').textContent='R:'+r;
+    document.getElementById('ledG').textContent='G:'+g;
+    document.getElementById('ledB').textContent='B:'+b;
+  }
+}
+
+function _ledSelectEffect(id){
+  _LED.effect=id;
+  document.querySelectorAll('.effect-btn').forEach(b=>
+    b.classList.toggle('active',parseInt(b.dataset.eff,10)===id));
+  const stxt=document.getElementById('ledStateTxt');
+  if(stxt) stxt.textContent=(_LED_FX_NAMES[id]||'?')+' · '+_ledRgbToHex(_LED.r,_LED.g,_LED.b)+' · '+_LED.period_ms+'ms';
+}
+
+function _ledOnSpeed(val){
+  _LED.period_ms=parseInt(val,10);
+  document.getElementById('ledSpeedVal').textContent=val+' ms';
+  const stxt=document.getElementById('ledStateTxt');
+  if(stxt) stxt.textContent=(_LED_FX_NAMES[_LED.effect]||'?')+' · '+_ledRgbToHex(_LED.r,_LED.g,_LED.b)+' · '+val+'ms';
+}
+
+async function applyLedNow(){
+  try{
+    await apiFetch('/led',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:`r=${_LED.r}&g=${_LED.g}&b=${_LED.b}&effect=${_LED.effect}&period_ms=${_LED.period_ms}`
+    });
+    showMsg('ledMsg',`💡 LED — ${_LED_FX_NAMES[_LED.effect]} applied at ${_ledRgbToHex(_LED.r,_LED.g,_LED.b)}.`,'ok');
+  } catch(e){
+    showMsg('ledMsg',`❌ ${esc(e.message)}`,'err');
+  }
+}
+
+async function _ledLoadState(){
+  try{
+    const d=await(await apiFetch('/led')).json();
+    _LED.r=d.r||0; _LED.g=d.g||0; _LED.b=d.b||0;
+    _LED.effect=d.effect||0; _LED.period_ms=d.period_ms||1000;
+    _ledSync();
+  } catch(_){ /* device may not support /led yet — keep defaults */ }
+}
+
+function _ledApplyPreset(i){
+  const p=_LED_PRESETS[i];
+  _LED.r=p.r;_LED.g=p.g;_LED.b=p.b;
+  _LED.effect=p.effect;_LED.period_ms=p.period_ms;
+  _ledSync();
+  applyLedNow();
+}
+
+function _ledBuildPresets(){
+  const grid=document.getElementById('ledPresetGrid');
+  if(!grid) return;
+  grid.innerHTML=_LED_PRESETS.map((p,i)=>{
+    const hex=_ledRgbToHex(p.r,p.g,p.b).toLowerCase();
+    return `<div class="preset-card" onclick="_ledApplyPreset(${i})">`+
+      `<div class="preset-dot" style="background:${hex};color:${hex};"></div>`+
+      `<div class="preset-info">`+
+        `<div class="preset-name">${esc(p.name)}</div>`+
+        `<div class="preset-desc">${esc(p.desc)}</div>`+
+      `</div></div>`;
+  }).join('');
+}
+
+function _initLighting(){
+  if(_ledPanelReady) return;
+  _ledPanelReady=true;
+  _ledBuildPresets();
+  _ledLoadState();
+  _ledStartPreview();
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   INIT — run on page load
+══════════════════════════════════════════════════════════════════════ */
+updateClock();
 scanNetworks();
 refreshStatus();
-setInterval(refreshStatus, 5000);
+loadLocation();
+loadScope();
+// Lighting Studio — pre-build presets + start frame-lock preview immediately
+_ledBuildPresets();
+_ledLoadState();
+_ledStartPreview();
+loadCurrentMac();
+markRefresh();
 </script>
 </body>
 </html>
