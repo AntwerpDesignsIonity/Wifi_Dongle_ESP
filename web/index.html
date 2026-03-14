@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32 WiFi Dongle Setup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f0f4ff;
+      margin: 0; padding: 24px 16px;
+      color: #1a1a2e;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.1);
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 32px 28px;
+    }
+    h1 { font-size: 1.6rem; margin: 0 0 8px; color: #1a73e8; }
+    p  { margin: 0 0 20px; color: #555; }
+    label { display: block; font-weight: 600; margin-top: 16px; }
+    select, input[type=password] {
+      display: block; width: 100%;
+      margin-top: 6px; padding: 10px 12px;
+      border: 1.5px solid #ccc; border-radius: 8px;
+      font-size: 1rem; outline: none;
+      transition: border-color .2s;
+    }
+    select:focus, input:focus { border-color: #1a73e8; }
+    .btn {
+      display: block; width: 100%;
+      margin-top: 24px; padding: 12px;
+      background: #1a73e8; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn:hover { background: #1558b0; }
+    .btn:disabled { background: #aaa; cursor: not-allowed; }
+    #msg {
+      margin-top: 16px; padding: 12px;
+      border-radius: 8px; display: none;
+      font-weight: 500;
+    }
+    .msg-ok  { background: #d4edda; color: #155724; }
+    .msg-err { background: #f8d7da; color: #721c24; }
+    .status-bar {
+      margin-top: 28px; padding: 12px;
+      background: #e8f0fe; border-radius: 8px;
+      font-size: .9rem;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px; height: 10px; border-radius: 50%;
+      margin-right: 6px;
+    }
+    .dot-ok  { background: #28a745; }
+    .dot-bad { background: #dc3545; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>&#x1F4F6; WiFi Dongle Setup</h1>
+  <p>Select your WiFi network and enter the password to connect the dongle to the Internet.</p>
+
+  <label for="ssid">Network
+    <select id="ssid"><option value="">Scanning for networks…</option></select>
+  </label>
+
+  <label for="pass">Password
+    <input type="password" id="pass"
+           placeholder="Leave empty for open networks" />
+  </label>
+
+  <button class="btn" id="connectBtn" onclick="connectWifi()">
+    Connect &amp; Save
+  </button>
+
+  <div id="msg"></div>
+
+  <div class="status-bar" id="statusBar">
+    <span class="dot dot-bad" id="statusDot"></span>
+    <span id="statusText">Loading status…</span>
+  </div>
+</div>
+
+<script>
+/* ── API helpers ─────────────────────────────────────────────────────── */
+async function apiFetch(url, opts) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r;
+}
+
+/* ── Scan ────────────────────────────────────────────────────────────── */
+async function scanNetworks() {
+  const sel = document.getElementById('ssid');
+  sel.innerHTML = '<option value="">Scanning…</option>';
+  try {
+    const r   = await apiFetch('/scan');
+    const aps = await r.json();
+    if (!aps.length) {
+      sel.innerHTML = '<option value="">No networks found</option>';
+      return;
+    }
+    sel.innerHTML = aps.map(a =>
+      `<option value="${esc(a.ssid)}">${esc(a.ssid)} (${a.rssi} dBm)</option>`
+    ).join('');
+  } catch (e) {
+    sel.innerHTML = `<option value="">Scan failed: ${e.message}</option>`;
+  }
+}
+
+/* ── Connect ─────────────────────────────────────────────────────────── */
+async function connectWifi() {
+  const ssid = document.getElementById('ssid').value;
+  const pass = document.getElementById('pass').value;
+  const btn  = document.getElementById('connectBtn');
+
+  if (!ssid) { showMsg('Please select a network.', false); return; }
+
+  btn.disabled    = true;
+  btn.textContent = 'Saving…';
+
+  const body = `ssid=${encodeURIComponent(ssid)}&password=${encodeURIComponent(pass)}`;
+  try {
+    await apiFetch('/connect', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    showMsg(
+      '✅ Credentials saved! The dongle is connecting to your network. ' +
+      'You can now plug it into your PC via USB — it will appear as a ' +
+      'network adapter automatically.',
+      true
+    );
+  } catch (e) {
+    showMsg(`❌ Error: ${e.message}. Please try again.`, false);
+    btn.disabled    = false;
+    btn.textContent = 'Connect & Save';
+  }
+}
+
+/* ── Status poll ─────────────────────────────────────────────────────── */
+async function refreshStatus() {
+  try {
+    const r  = await apiFetch('/status');
+    const st = await r.json();
+    const states = ['Disconnected', 'Connecting…', 'Connected', 'Failed'];
+    const dot    = document.getElementById('statusDot');
+    const text   = document.getElementById('statusText');
+    dot.className = 'dot ' + (st.state === 2 ? 'dot-ok' : 'dot-bad');
+    text.textContent = st.state === 2
+      ? `Connected to ${esc(st.ssid)} — IP: ${st.ip}  (${st.rssi} dBm)`
+      : (states[st.state] || 'Unknown');
+  } catch (_) { /* ignore transient errors */ }
+}
+
+/* ── Helpers ─────────────────────────────────────────────────────────── */
+function showMsg(text, ok) {
+  const el = document.getElementById('msg');
+  el.className    = ok ? 'msg-ok' : 'msg-err';
+  el.textContent  = text;
+  el.style.display = 'block';
+}
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ── Init ────────────────────────────────────────────────────────────── */
+scanNetworks();
+refreshStatus();
+setInterval(refreshStatus, 5000);
+</script>
+</body>
+</html>
