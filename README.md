@@ -1,6 +1,6 @@
 # ESP32-S3 WiFi USB Dongle
 
-A firmware project that turns an **ESP32-S3-N16R8** (16 MB Flash · 8 MB OPI PSRAM) module into a **plug-and-play USB WiFi dongle** for Windows 10/11 and Linux.
+A firmware project that turns an **ESP32-S3-N16R8** (16 MB Flash · 8 MB OPI PSRAM) module into a **plug-and-play USB WiFi dongle** for Windows 10/11 and Linux, with an integrated **SSH server** for remote configuration.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -26,6 +26,7 @@ A firmware project that turns an **ESP32-S3-N16R8** (16 MB Flash · 8 MB OPI PSR
 |---------|--------|
 | **mDNS hostname** | Resolves as **`ionity.today.local`** on Windows/macOS/Linux (Bonjour) |
 | **HTTPS portal** | Self-signed TLS on port 443 — HTTP port 80 redirects automatically |
+| **SSH server** | Password-authenticated, port 22, up to 3 concurrent sessions |
 | **Location** | `GET/POST /location` stores city, lat & lon in NVS for regional channel hints |
 | **OS support** | Windows 10/11 (RNDIS) · Linux kernel ≥ 2.6 (`cdc_ether`) |
 | **Transport** | USB Full-Speed CDC-ECM + RNDIS composite |
@@ -66,6 +67,61 @@ idf.py build flash monitor
 1. Join the `ESP32-WiFi-Dongle` soft-AP (password `configure123`)
 2. Browse to **`https://ionity.today.local`** — or `https://192.168.4.1`
 3. Pick your WiFi network, enter the password, optionally set your location
+
+---
+
+## SSH Remote Management
+
+The dongle runs a password-authenticated SSH server on **port 22** enabling remote configuration over WiFi or the config-AP.
+
+### Connect
+
+Once the device has joined your WiFi network the boot log shows its IP:
+```
+I (1234) main: SSH server started on port 22
+I (1235) main: Connect: ssh admin@192.168.1.42
+```
+
+```bash
+ssh admin@<device-ip>
+# or via config-AP: ssh admin@192.168.4.1
+```
+
+### SSH Shell Commands
+
+| Command | Description |
+|---------|-------------|
+| `help` | List all commands |
+| `status` | Show WiFi state and IP address |
+| `wifi <ssid> <password>` | Switch to a new WiFi network (saved to NVS) |
+| `setpass <new-password>` | Change the SSH login password (saved to NVS, min 8 chars) |
+| `version` | Print firmware version |
+| `reboot` | Restart the device |
+| `exit` / `quit` | Close the session |
+
+### Config-AP fallback
+
+If the device cannot reach the configured WiFi network it starts a config access-point:
+
+```
+SSID:     ESP32-Dongle-Setup
+Password: dongle123
+IP:       192.168.4.1
+```
+
+Connect your laptop to that AP and SSH in to update WiFi credentials:
+
+```bash
+ssh admin@192.168.4.1
+$ wifi NewSSID NewPassword
+$ reboot
+```
+
+### Security Notes
+
+* Change `SSH_DEFAULT_PASSWORD` in `config.h` before flashing, or use the `setpass` command after first boot (minimum 8 characters).
+* The device generates (or loads) a unique RSA host key stored in NVS — SSH clients will not see host-key-changed warnings after reboots.
+* For production deployments consider enabling NVS encryption (`CONFIG_NVS_ENCRYPTION=y` in `sdkconfig.defaults`).
 
 ---
 
@@ -111,65 +167,6 @@ build.bat
 | BOOT pin | GPIO 0 — pull LOW to enter download mode |
 | Status LED | GPIO 48 (WS2812B on most DevKit boards) — changeable in `config.h` |
 | Power | 5 V via USB bus (typical draw ≤ 150 mA during WiFi TX) |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-* [ESP-IDF v5.1 or later](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/)
-* Python 3.8+
-
-### 1 · Clone and prepare
-
-```bash
-git clone https://github.com/AntwerpDesignsIonity/Wifi_Dongle_ESP.git
-cd Wifi_Dongle_ESP/firmware
-
-# Source the ESP-IDF environment (adjust path to your installation)
-. ~/esp/esp-idf/export.sh
-```
-
-### 2 · Build
-
-```bash
-idf.py set-target esp32s3
-idf.py build
-```
-
-### 3 · Flash
-
-Hold **BOOT (GPIO 0)** while connecting the ESP32-S3 to USB, then:
-
-```bash
-idf.py -p /dev/ttyACM0 flash monitor
-# Windows: idf.py -p COM5 flash monitor
-```
-
-### 4 · First-time WiFi configuration
-
-After flashing, the dongle has no stored WiFi credentials.
-It will broadcast a soft-AP named **`ESP32-WiFi-Dongle`**.
-
-1. On your phone or laptop, connect to:
-   * **SSID**: `ESP32-WiFi-Dongle`
-   * **Password**: `configure123`
-2. Open a browser and navigate to **http://192.168.4.1**
-3. Select your home/office WiFi network from the scan list
-4. Enter the password and click **Connect & Save**
-5. The ESP32 stores the credentials in NVS and connects to your router
-
-### 5 · Use as a WiFi dongle
-
-Once credentials are saved, every subsequent boot the ESP32:
-
-1. Connects to the stored WiFi network
-2. Presents itself as a **USB Ethernet adapter** when plugged into any PC
-
-**Windows**: See the [Windows Driver](#windows-driver-plug-and-play) section below. Run `driver/install.bat` once (as Administrator) so Windows silently recognises the dongle on every future plug-in.  
-**Linux**: The `cdc_ether` or `rndis_host` module loads automatically — no action needed.  
-The host receives IP address **192.168.7.2** with gateway **192.168.7.1** (ESP32).
 
 ---
 
@@ -245,6 +242,12 @@ Wifi_Dongle_ESP/
 │       ├── wifi_manager.c/h    WiFi STA connection, NVS credential storage
 │       ├── usb_ncm.c/h         USB CDC-ECM/RNDIS + esp_netif + NAPT bridge
 │       └── http_server.c/h     Soft-AP config portal (scan, connect, status)
+├── include/
+│   └── config.h                SSH/WiFi compile-time defaults
+├── src/
+│   ├── main.c                  SSH server boot sequence
+│   ├── wifi_manager.h/c        WiFi STA + AP manager (SSH build)
+│   └── ssh_server.h/c          wolfSSH-based SSH server + admin shell
 ├── scripts/
 │   ├── flash.bat               Windows: generate certs → build → flash → monitor
 │   └── flash.sh                Linux/macOS equivalent
@@ -268,6 +271,14 @@ Edit **`firmware/main/config.h`** before building:
 
 // Status LED GPIO (GPIO 48 for most ESP32-S3 DevKit boards)
 #define LED_STATUS_PIN  48
+```
+
+For SSH credentials edit **`include/config.h`**:
+
+```c
+#define DEFAULT_WIFI_SSID      "CHANGE_ME_SSID"
+#define DEFAULT_WIFI_PASSWORD  "CHANGE_ME_PASSWORD"
+#define SSH_DEFAULT_PASSWORD   "CHANGE_ME!"   // min 8 characters
 ```
 
 ---
@@ -298,6 +309,7 @@ Adjust sizes in `firmware/partitions_16MB.csv` as needed (total must not exceed 
 | Portal not accessible | Make sure you connected to the `ESP32-WiFi-Dongle` AP, not your normal WiFi |
 | WiFi connection fails after config | Verify SSID/password; try `idf.py monitor` for logs |
 | No internet on host | Check that NAT is enabled — watch for `NAPT enabled` in the serial log |
+| SSH connection refused | Verify device IP from serial log; ensure port 22 is not blocked |
 
 ---
 

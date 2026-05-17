@@ -1,3 +1,13 @@
+### PlatformIO / ESP-IDF ###
+.pio/
+.pioenvs/
+.piolibdeps/
+sdkconfig
+sdkconfig.old
+cmake-build-*/
+managed_components/
+dependencies.lock
+
 ### ESP-IDF build artifacts ###
 firmware/build/
 firmware/sdkconfig
@@ -5,6 +15,7 @@ firmware/managed_components/
 firmware/dependencies.lock
 firmware/.cache/
 firmware/flasher_args.json
+build/
 
 ### Python ###
 __pycache__/
@@ -15,6 +26,9 @@ __pycache__/
 *.egg-info/
 dist/
 *.egg
+.env
+.venv/
+venv/
 
 ### Companion build outputs ###
 companion/dist/
@@ -35,14 +49,3 @@ companion/assets/ionity.ico
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-
-### AL (legacy, kept for compatibility) ###
-.alcache/
-.alpackages/
-.snapshots/
-.output/
-*.app
-rad.json
-*.g.xlf
-*.flf
-TestResults.xml
