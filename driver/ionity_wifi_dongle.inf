@@ -1,0 +1,91 @@
+; =============================================================================
+; ionity_wifi_dongle.inf
+; Windows RNDIS driver descriptor for IONITY WiFi Dongle (ESP32-S3)
+;
+; Matches USB VID 0x303A (Espressif) / PID 0x4002 (RNDIS/ECM net device)
+; which is the default TinyUSB descriptor used by ESP-IDF.
+;
+; Plug-and-play install:
+;   Windows 10 / 11 — right-click this file → "Install" OR run install.bat
+;   Windows 7 / 8   — run install.bat (requires administrator)
+;
+; IONITY (Pty) Ltd - South Africa
+; CC BY-NC-SA 4.0  ALL RIGHTS RESERVED, FREE TO USE | Policy 986 AED
+; =============================================================================
+
+[Version]
+Signature            = "$Windows NT$"
+Class                = Net
+ClassGUID            = {4d36e972-e325-11ce-bfc1-08002be10318}
+Provider             = %ManufacturerName%
+CatalogFile          = ionity_wifi_dongle.cat
+DriverVer            = 03/14/2026,1.0.0.0
+PnpLockDown          = 1
+
+; --------------------------------------------------------------------------
+; Manufacturer table
+; --------------------------------------------------------------------------
+[Manufacturer]
+%ManufacturerName% = Devices, NTamd64, NTx86, NTarm64
+
+; 64-bit Windows
+[Devices.NTamd64]
+%DeviceName% = RNDIS.Install, USB\VID_303A&PID_4002
+
+; 32-bit Windows
+[Devices.NTx86]
+%DeviceName% = RNDIS.Install, USB\VID_303A&PID_4002
+
+; ARM64 Windows (Surface Pro X, etc.)
+[Devices.NTarm64]
+%DeviceName% = RNDIS.Install, USB\VID_303A&PID_4002
+
+; --------------------------------------------------------------------------
+; RNDIS install — delegates to the built-in Windows RNDIS 6 inbox driver
+; --------------------------------------------------------------------------
+[RNDIS.Install.NTamd64]
+Include    = netrndis6.inf
+Needs      = RNDIS6.ndi
+
+[RNDIS.Install.NTamd64.Services]
+Include    = netrndis6.inf
+Needs      = RNDIS6.ndi.Services
+
+[RNDIS.Install.NTx86]
+Include    = netrndis6.inf
+Needs      = RNDIS6.ndi
+
+[RNDIS.Install.NTx86.Services]
+Include    = netrndis6.inf
+Needs      = RNDIS6.ndi.Services
+
+[RNDIS.Install.NTarm64]
+Include    = netrndis6.inf
+Needs      = RNDIS6.ndi
+
+[RNDIS.Install.NTarm64.Services]
+Include    = netrndis6.inf
+Needs      = RNDIS6.ndi.Services
+
+; --------------------------------------------------------------------------
+; Registry — device description visible in Network Adapters
+; --------------------------------------------------------------------------
+[RNDIS.Install.NTamd64.HW]
+AddReg = RNDIS.AddReg.HW
+
+[RNDIS.Install.NTx86.HW]
+AddReg = RNDIS.AddReg.HW
+
+[RNDIS.Install.NTarm64.HW]
+AddReg = RNDIS.AddReg.HW
+
+[RNDIS.AddReg.HW]
+; Mark the device as a remote NDIS device
+HKR,,"UpperFilters",0x00010000,"NdisImPlatform"
+
+; --------------------------------------------------------------------------
+; Localisation strings
+; --------------------------------------------------------------------------
+[Strings]
+ManufacturerName = "IONITY"
+DeviceName       = "IONITY WiFi Dongle (RNDIS)"

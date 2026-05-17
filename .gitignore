@@ -1,9 +1,11 @@
-### ESP-IDF build output ###
-build/
-sdkconfig
-sdkconfig.old
-managed_components/
-dependencies.lock
+### ESP-IDF build artifacts ###
+firmware/build/
+firmware/sdkconfig
+firmware/sdkconfig.old
+firmware/managed_components/
+firmware/dependencies.lock
+firmware/.cache/
+firmware/flasher_args.json
 
 ### PlatformIO ###
 .pio/
@@ -16,16 +18,30 @@ dependencies.lock
 *.ino.hex
 *.ino.with_bootloader.bin
 
-### Python virtual environments and caches ###
+### Python ###
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+*.egg
 .venv/
 venv/
 
-### VS Code ###
+### Companion build outputs ###
+companion/dist/
+companion/build/
+companion/*.spec
+companion/assets/ionity.ico
+
+### IDE / editor ###
 .vscode/
 *.code-workspace
+*.swp
+*.swo
+*~
 
 ### macOS ###
 .DS_Store
@@ -53,3 +69,14 @@ idf_monitor_log*
 ### Temporary files ###
 *.tmp
 *.bak
+
+### AL (legacy, kept for compatibility) ###
+.alcache/
+.alpackages/
+.snapshots/
+.output/
+*.app
+rad.json
+*.g.xlf
+*.flf
+TestResults.xml
