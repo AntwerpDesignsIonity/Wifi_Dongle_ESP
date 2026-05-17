@@ -225,7 +225,9 @@ Wifi_Dongle_ESP/
 │   ├── ionity_companion.py     Companion application source
 │   └── requirements.txt        pystray, Pillow
 ├── docs/
-│   ├── hardware.md             Pin assignments, power budget, LED colour map
+│   ├── firmware.md             Build environment, configuration, and build steps
+│   ├── flashing.md             Flashing guide (esptool.py)
+│   ├── hardware.md             Pin assignments, BOM, power budget, LED colour map
 │   └── ota.md                  OTA update procedure and partition layout
 ├── driver/                     Windows RNDIS driver (INF + installer)
 │   ├── ionity_wifi_dongle.inf  PnP INF — matches VID 0x303A / PID 0x4002
@@ -251,6 +253,17 @@ Wifi_Dongle_ESP/
 └── web/
     └── index.html              Reference copy of the config portal UI
 ```
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [docs/hardware.md](docs/hardware.md) | Pin assignments, BOM, power budget, and wiring |
+| [docs/firmware.md](docs/firmware.md) | Build environment, configuration, and build steps |
+| [docs/flashing.md](docs/flashing.md) | Flashing the ESP32-S3 with esptool.py |
+| [docs/ota.md](docs/ota.md) | OTA update procedure and partition layout |
 
 ---
 

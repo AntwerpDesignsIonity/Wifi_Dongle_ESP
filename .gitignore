@@ -1,10 +1,22 @@
 ### ESP-IDF build artifacts ###
 firmware/build/
 firmware/sdkconfig
+firmware/sdkconfig.old
 firmware/managed_components/
 firmware/dependencies.lock
 firmware/.cache/
 firmware/flasher_args.json
+
+### PlatformIO ###
+.pio/
+.pioenvs/
+.piolibdeps/
+
+### Arduino IDE ###
+*.ino.elf
+*.ino.bin
+*.ino.hex
+*.ino.with_bootloader.bin
 
 ### Python ###
 __pycache__/
@@ -15,6 +27,8 @@ __pycache__/
 *.egg-info/
 dist/
 *.egg
+.venv/
+venv/
 
 ### Companion build outputs ###
 companion/dist/
@@ -24,17 +38,37 @@ companion/assets/ionity.ico
 
 ### IDE / editor ###
 .vscode/
+*.code-workspace
 *.swp
 *.swo
 *~
 
 ### macOS ###
 .DS_Store
+.AppleDouble
+.LSOverride
 
 ### Windows ###
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+### Linux ###
+*~
+
+### Compiled binaries and firmware artifacts ###
+*.bin
+*.elf
+*.hex
+*.map
+
+### Logs ###
+*.log
+idf_monitor_log*
+
+### Temporary files ###
+*.tmp
+*.bak
 
 ### AL (legacy, kept for compatibility) ###
 .alcache/
