@@ -2,27 +2,50 @@
 .pio/
 .pioenvs/
 .piolibdeps/
-.vscode/
 sdkconfig
 sdkconfig.old
-build/
 cmake-build-*/
 managed_components/
 dependencies.lock
 
+### ESP-IDF build artifacts ###
+firmware/build/
+firmware/sdkconfig
+firmware/managed_components/
+firmware/dependencies.lock
+firmware/.cache/
+firmware/flasher_args.json
+build/
+
 ### Python ###
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+.Python
 *.egg-info/
+dist/
+*.egg
 .env
 .venv/
 venv/
 
-### OS ###
-.DS_Store
-Thumbs.db
+### Companion build outputs ###
+companion/dist/
+companion/build/
+companion/*.spec
+companion/assets/ionity.ico
 
-### Editor ###
+### IDE / editor ###
+.vscode/
 *.swp
 *.swo
 *~
+
+### macOS ###
+.DS_Store
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
